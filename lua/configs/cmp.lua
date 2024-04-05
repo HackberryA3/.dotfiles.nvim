@@ -1,0 +1,108 @@
+local cmp = require("cmp")
+local luasnip = require("luasnip")
+local copilot = require("copilot.suggestion")
+
+local cmp_kinds = {
+	Text = '  ',
+	Method = '󰊕  ',
+	Function = '󰊕  ',
+	Constructor = '󰒓  ',
+	Field = '󰫧  ',
+	Variable = '󰫧  ',
+	Class = '󰆧  ',
+	Interface = '  ',
+	Module = '󰅩  ',
+	Property = '󰖷  ',
+	Unit = '  ',
+	Value = '  ',
+	Enum = '󰉹  ',
+	Keyword = '󰌆  ',
+	Snippet = '󰅌  ',
+	Color = '󰏘  ',
+	File = '󰈔  ',
+	Reference = '󰷊  ',
+	Folder = '󰉋  ',
+	EnumMember = '  ',
+	Constant = '󰌾  ',
+	Struct = '󰆩  ',
+	Event = '󱐋  ',
+	Operator = '󰪚  ',
+	TypeParameter = '  ',
+}
+
+cmp.setup({
+	sources = {
+		{ name = "nvim_lsp" }, --ソース類を設定
+		{ name = "buffer" },
+		{ name = "path" },
+		{ name = "calc" },
+		{ name = "luasnip" },
+	},
+	mapping = cmp.mapping.preset.insert({
+		["<C-f>"] = cmp.mapping.scroll_docs(4),
+		["<C-b>"] = cmp.mapping.scroll_docs(-4),
+		["<Up>"] = cmp.mapping.select_prev_item(), --Ctrl+pで補完欄を一つ上に移動
+		["<Down>"] = cmp.mapping.select_next_item(), --Ctrl+nで補完欄を一つ下に移動
+		["<C-l>"] = cmp.mapping.complete(),
+		["<ESC>"] = cmp.mapping.abort(),
+		["<TAB>"] = cmp.mapping(function(fallback)
+			if cmp.visible() then
+				cmp.confirm({ select = true }) --Ctrl+yで補完を選択確定
+			elseif luasnip.expand_or_jumpable() then
+				luasnip.expand_or_jump()
+			elseif copilot.is_visible() then
+				copilot.accept()
+			else
+				fallback()
+			end
+		end, { "i", "s" }),
+		["<S-TAB>"] = cmp.mapping(function(fallback)
+			if luasnip.jumpable(-1) then
+				luasnip.jump(-1)
+			else
+				fallback()
+			end
+		end, { "i", "s" }),
+	}),
+	experimental = {
+		ghost_text = true,
+	},
+	snippet = {
+		expand = function(args)
+			luasnip.lsp_expand(args.body)
+		end
+	},
+	formatting = {
+		fields = { "kind", "abbr" },
+		format = function(_, vim_item)
+			vim_item.kind = cmp_kinds[vim_item.kind] or ""
+			return vim_item
+		end,
+	},
+})
+
+-- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
+cmp.setup.cmdline({ '/', '?' }, {
+	mapping = cmp.mapping.preset.cmdline(),
+	sources = {
+		{ name = 'buffer' }
+	}
+})
+
+-- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
+cmp.setup.cmdline(':', {
+	mapping = cmp.mapping.preset.cmdline(),
+	sources = cmp.config.sources({
+		{ name = 'path' }
+	}, {
+		{ name = 'cmdline' }
+	}),
+	matching = { disallow_symbol_nonprefix_matching = false }
+})
+
+-- 関数補完をした後に、自動で括弧を挿入
+local cmp_autopairs = require('nvim-autopairs.completion.cmp')
+cmp.event:on(
+	'confirm_done',
+	cmp_autopairs.on_confirm_done()
+)
