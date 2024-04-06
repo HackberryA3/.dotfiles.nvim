@@ -40,12 +40,12 @@ keyset("n", "<space>e",
 -- /////////////////////////////////////////////////////////////////////////////////////////////
 
 -- Telescope ///////////////////////////////////////////////////////////////////////////////////
-local builtin = require('telescope.builtin')
-keyset("n", "<leader>ff", builtin.find_files, {})
-keyset("n", "<leader>fg", builtin.live_grep, {})
-keyset("n", "<leader>fb", builtin.buffers, {})
-keyset("n", "<leader>fh", builtin.help_tags, {})
-keyset("n", "<leader>fc", builtin.commands, {})
+local telescope_builtin = require('telescope.builtin')
+keyset("n", "<leader>ff", telescope_builtin.find_files, {})
+keyset("n", "<leader>fg", telescope_builtin.live_grep, {})
+keyset("n", "<leader>fb", telescope_builtin.buffers, {})
+keyset("n", "<leader>fh", telescope_builtin.help_tags, {})
+keyset("n", "<leader>fc", telescope_builtin.commands, {})
 -- /////////////////////////////////////////////////////////////////////////////////////////////
 
 -- LSP /////////////////////////////////////////////////////////////////////////////////////////
@@ -53,7 +53,6 @@ keyset("n", "<F12>", "<CMD>Lspsaga goto_definition<CR>")
 keyset("n", "<S-F12>", "<CMD>Lspsaga finder<CR>")
 keyset("n", "<A-F12>", "<CMD>Lspsaga peek_definition<CR>")
 keyset("n", "K", "<CMD>Lspsaga hover_doc<CR>")
-keyset("n", "<C-m>", vim.lsp.buf.signature_help)
 keyset("n", "<F2>", "<CMD>Lspsaga rename<CR>")
 keyset("n", "<C-k><C-k>", "<CMD>Lspsaga code_action<CR>")
 keyset("n", "[g", vim.diagnostic.goto_prev)
@@ -62,15 +61,21 @@ keyset("n", "<C-k><C-e>", function() vim.lsp.buf.format({ async = true }) end)
 -- /////////////////////////////////////////////////////////////////////////////////////////////
 
 -- DAP /////////////////////////////////////////////////////////////////////////////////////////
-keyset('n', '<F5>', function() require('dap').continue() end)
-keyset('n', '<F10>', function() require('dap').step_over() end)
-keyset('n', '<F11>', function() require('dap').step_into() end)
-keyset('n', '<S-F11>', function() require('dap').step_out() end)
-keyset('n', '<Leader>b', function() require('dap').toggle_breakpoint() end)
-keyset('n', '<Leader>B', function() require('dap').set_breakpoint() end)
-keyset('n', '<Leader>lp', function() require('dap').set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end)
-keyset('n', '<Leader>dr', function() require('dap').repl.open() end)
-keyset('n', '<Leader>dl', function() require('dap').run_last() end)
+local dap = require('dap')
+keyset('n', '<F5>', function() dap.continue() end)
+keyset('n', '>S-F5>', function () dap.terminate() end)
+keyset('n', '<A-F5>', function() dap.run_last() end)
+keyset('n', '<F10>', function() dap.step_over() end)
+keyset('n', '<F11>', function() dap.step_into() end)
+keyset('n', '<S-F11>', function() dap.step_out() end)
+keyset('n', '<Leader>bb', function() dap.toggle_breakpoint() end)
+keyset('n', '<Leader>bl', function() dap.toggle_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end)
+keyset('n', '<Leader>bc', function() dap.toggle_breakpoint(vim.fn.input('Condition: '), nil, nil) end)
+keyset('n', '<Leader>bh', function() dap.toggle_breakpoint(nil, vim.fn.input('Hit count: '), nil) end)
+keyset('n', '<Leader>bd', function() dap.clear_breakpoints() end)
+-- /////////////////////////////////////////////////////////////////////////////////////////////
+-- Code Runner /////////////////////////////////////////////////////////////////////////////////
+keyset("n", "<F4>", function() vim.cmd("RunCode") end)
 -- /////////////////////////////////////////////////////////////////////////////////////////////
 
 -- Dial ////////////////////////////////////////////////////////////////////////////////////////

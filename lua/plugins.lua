@@ -44,7 +44,7 @@ require("lazy").setup({
 	},                                                                                                                                -- DAPとMasonを繋げる
 	{ "theHamsta/nvim-dap-virtual-text", dependencies = { "nvim-treesitter/nvim-treesitter", "mfussenegger/nvim-dap" }, config = true }, -- デバッグ時の変数の値や、例外の情報を表示する
 
-	{ "CRAG666/code_runner.nvim",        config = true },                                                                             -- クイックラン TODO: 言語に合わせてコマンドを書く
+	{ "CRAG666/code_runner.nvim",        opts = require("configs.code_runner") },                                                                             -- クイックラン TODO: 言語に合わせてコマンドを書く
 
 	-- テーマ
 	{ "zaldih/themery.nvim",             opts = require("configs.themery") }, -- テーマピッカー
