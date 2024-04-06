@@ -1,10 +1,12 @@
+local level = vim.log.levels
+
 -- MasonでインストールしたDAPを設定する
 require("mason-nvim-dap").setup({
 	handlers = {
 		function(config)
 			require("mason-nvim-dap").default_setup(config)
-			vim.notify("Load dap : " .. config.name, "info", { title = "Mason" })
-			vim.print(config)
+			vim.notify("Load dap : " .. config.name, level.INFO, { title = "Mason" })
+			-- vim.print(config)
 		end
 	}
 })
@@ -25,7 +27,7 @@ table.insert(dap.configurations.cpp,
 			local ext = vim.fn.has("win32") == 1 and ".exe" or ".out"
 
 			os.execute("g++ -g " .. filePath .. " -o " .. fileName .. ext)
-			vim.notify("Compiled : " .. filePath, "info", { title = "DAP" })
+			vim.notify("Compiled : " .. filePath, level.INFO, { title = "DAP" })
 
 			return fileName .. ext
 		end,

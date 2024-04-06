@@ -84,7 +84,7 @@ require("lazy").setup({
 	-- UI
 	{ "nvim-lualine/lualine.nvim", dependencies = "nvim-tree/nvim-web-devicons", opts = require("configs.lualine") },                             -- ステータスライン
 	-- { "akinsho/bufferline.nvim", dependencies = "nvim-tree/nvim-web-devicons", opts = require("configs.bufferline") }, -- バッファーライン
-	{ "rcarriga/nvim-notify", config = function() require("configs.notify") end },                                                                -- 通知トースト
+	{ "rcarriga/nvim-notify", priority=900, config = function() require("configs.notify") end },                                                                -- 通知トースト
 	{ "folke/noice.nvim", event = "VeryLazy", opts = require("configs.noice"), dependencies = { "MunifTanjim/nui.nvim", "rcarriga/nvim-notify", } }, -- コマンドライン、通知をリッチにする
 	{ "AndreM222/copilot-lualine" },                                                                                                              -- Copilot のステータスを表示する
 
