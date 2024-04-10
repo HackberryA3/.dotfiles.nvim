@@ -15,6 +15,9 @@ require("mason-nvim-dap").setup({
 
 -- デバッグ構成の設定
 local dap, dapui = require("dap"), require("dapui")
+if dap.configurations.cpp == nil then
+	dap.configurations.cpp = {}
+end
 table.insert(dap.configurations.cpp,
 	{
 		name = "Debug this file",
