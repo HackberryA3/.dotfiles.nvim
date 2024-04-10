@@ -44,7 +44,7 @@ require("lazy").setup({
 	},                                                                                                                                -- DAPとMasonを繋げる
 	{ "theHamsta/nvim-dap-virtual-text", dependencies = { "nvim-treesitter/nvim-treesitter", "mfussenegger/nvim-dap" }, config = true }, -- デバッグ時の変数の値や、例外の情報を表示する
 
-	{ "CRAG666/code_runner.nvim",        opts = require("configs.code_runner") },                                                                             -- クイックラン TODO: 言語に合わせてコマンドを書く
+	{ "CRAG666/code_runner.nvim",        opts = require("configs.code_runner") },                                                     -- クイックラン TODO: 言語に合わせてコマンドを書く
 
 	-- テーマ
 	{ "zaldih/themery.nvim",             opts = require("configs.themery") }, -- テーマピッカー
@@ -84,13 +84,12 @@ require("lazy").setup({
 	-- UI
 	{ "nvim-lualine/lualine.nvim", dependencies = "nvim-tree/nvim-web-devicons", opts = require("configs.lualine") },                             -- ステータスライン
 	-- { "akinsho/bufferline.nvim", dependencies = "nvim-tree/nvim-web-devicons", opts = require("configs.bufferline") }, -- バッファーライン
-	{ "rcarriga/nvim-notify", priority=900, config = function() require("configs.notify") end },                                                                -- 通知トースト
+	{ "rcarriga/nvim-notify", priority = 900, config = function() require("configs.notify") end },                                                -- 通知トースト
 	{ "folke/noice.nvim", event = "VeryLazy", opts = require("configs.noice"), dependencies = { "MunifTanjim/nui.nvim", "rcarriga/nvim-notify", } }, -- コマンドライン、通知をリッチにする
 	{ "AndreM222/copilot-lualine" },                                                                                                              -- Copilot のステータスを表示する
 
 	-- 便利機能
-	{ "dinhhuy258/git.nvim", config = true },                                                    -- Git
-	{ "lewis6991/gitsigns.nvim", opts = require("configs.gitsigns") },                           -- Git sign
+	{ "lewis6991/gitsigns.nvim", opts = require("configs.gitsigns") },                           -- Git
 	{ "nvim-telescope/telescope.nvim", tag = "0.1.6", dependencies = { "nvim-lua/plenary.nvim" } }, -- 万能検索 (ripgrepをインストールする必要あり)
 	{ "akinsho/toggleterm.nvim", version = "*", opts = require("configs.toggleterm") },          -- ターミナル
 

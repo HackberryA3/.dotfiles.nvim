@@ -1,5 +1,5 @@
 require("settings")
 require("plugins")
-require("keybindings")
+require("keybindings").setup()
 require("theme")
 require("snippets")
