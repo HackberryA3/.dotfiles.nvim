@@ -1,16 +1,17 @@
 local level = vim.log.levels
 
 -- MasonでインストールしたDAPを設定する
+local loaded_dap = {}
 require("mason-nvim-dap").setup({
 	handlers = {
 		function(config)
 			require("mason-nvim-dap").default_setup(config)
-			vim.notify("Load dap : " .. config.name, level.INFO, { title = "Mason" })
+			table.insert(loaded_dap, config.name)
 			-- vim.print(config)
 		end
 	}
 })
-
+vim.notify("Loaded DAP\n  " .. table.concat(loaded_dap, "\n  "), level.INFO, { title = "Mason" })
 
 
 -- デバッグ構成の設定
