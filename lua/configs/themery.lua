@@ -1,10 +1,3 @@
-function GetThemePath()
-	if vim.loop.os_uname().sysname == "Windows_NT" then
-		return "~\\AppData\\Local\\nvim\\lua\\theme.lua"
-	end
-	return "~/.config/nvim/lua/theme.lua"
-end
-
 return {
 	themes = {
 		{
@@ -40,6 +33,6 @@ return {
 			colorscheme = "catppuccin-mocha"
 		}
 	},
-	themeConfigFile = GetThemePath(),
+	themeConfigFile = vim.fn.stdpath("config") .. "/lua/theme.lua",
 	livePreview = true
 }

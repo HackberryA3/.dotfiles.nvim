@@ -11,7 +11,9 @@ require("mason-nvim-dap").setup({
 		end
 	}
 })
-vim.notify("Loaded DAP\n  " .. table.concat(loaded_dap, "\n  "), level.INFO, { title = "Mason" })
+if #loaded_dap ~= 0 then
+	vim.notify("Loaded DAP\n  " .. table.concat(loaded_dap, "\n  "), level.INFO, { title = "Mason" })
+end
 
 
 -- デバッグ構成の設定
