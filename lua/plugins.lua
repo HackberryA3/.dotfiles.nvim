@@ -73,35 +73,36 @@ require("lazy").setup({
 
 	-- ファイラー
 	{ "lambdalisue/fern.vim", },                                               -- ファイラー
-	{ "lambdalisue/fern-hijack.vim", dependencies = "lambdalisue/fern.vim" },  -- ファイラーをFernにする
-	{ "lambdalisue/fern-git-status.vim", dependencies = "lambdalisue/fern.vim" }, -- FernにGit Statusを表示する
+	{ "lambdalisue/fern-hijack.vim",            dependencies = "lambdalisue/fern.vim" }, -- ファイラーをFernにする
+	{ "lambdalisue/fern-git-status.vim",        dependencies = "lambdalisue/fern.vim" }, -- FernにGit Statusを表示する
 
 	-- フォント
 	{ "lambdalisue/nerdfont.vim" },                                                                                   -- Nerd Fontに対応させる
 	{ "lambdalisue/fern-renderer-nerdfont.vim", dependencies = { "lambdalisue/fern.vim", "lambdalisue/nerdfont.vim" } }, -- Nerd FontをFernに対応させる
-	{ "lambdalisue/glyph-palette.vim", dependencies = "lambdalisue/nerdfont.vim" },                                   -- Nerd Font(ファイルアイコン等)に色を反映させる
+	{ "lambdalisue/glyph-palette.vim",          dependencies = "lambdalisue/nerdfont.vim" },                          -- Nerd Font(ファイルアイコン等)に色を反映させる
 
 	-- UI
-	{ "nvim-lualine/lualine.nvim", dependencies = "nvim-tree/nvim-web-devicons", opts = require("configs.lualine") },                             -- ステータスライン
+	{ "nvim-lualine/lualine.nvim",              dependencies = "nvim-tree/nvim-web-devicons",                         opts = require("configs.lualine") }, -- ステータスライン
 	-- { "akinsho/bufferline.nvim", dependencies = "nvim-tree/nvim-web-devicons", opts = require("configs.bufferline") }, -- バッファーライン
-	{ "rcarriga/nvim-notify", priority = 900, config = function() require("configs.notify") end },                                                -- 通知トースト
-	{ "folke/noice.nvim", event = "VeryLazy", opts = require("configs.noice"), dependencies = { "MunifTanjim/nui.nvim", "rcarriga/nvim-notify", } }, -- コマンドライン、通知をリッチにする
+	{ "rcarriga/nvim-notify",                   priority = 900,                                                       config = function()
+		require("configs.notify") end },                                                                                                          -- 通知トースト
+	{ "folke/noice.nvim",                       event = "VeryLazy",                                                   opts = require("configs.noice"),                  dependencies = { "MunifTanjim/nui.nvim", "rcarriga/nvim-notify", } }, -- コマンドライン、通知をリッチにする
 	{ "AndreM222/copilot-lualine" },                                                                                                              -- Copilot のステータスを表示する
 
 	-- 便利機能
-	{ "lewis6991/gitsigns.nvim", opts = require("configs.gitsigns") },                           -- Git
-	{ "nvim-telescope/telescope.nvim", tag = "0.1.6", dependencies = { "nvim-lua/plenary.nvim" } }, -- 万能検索 (ripgrepをインストールする必要あり)
-	{ "akinsho/toggleterm.nvim", version = "*", opts = require("configs.toggleterm") },          -- ターミナル
+	{ "lewis6991/gitsigns.nvim",                opts = require("configs.gitsigns") },            -- Git
+	{ "nvim-telescope/telescope.nvim",          tag = "0.1.6",                                                        dependencies = { "nvim-lua/plenary.nvim" } }, -- 万能検索 (ripgrepをインストールする必要あり)
+	{ "akinsho/toggleterm.nvim",                version = "*",                                                        opts = require("configs.toggleterm") }, -- ターミナル
 
 	-- コーディングの便利機能
-	{ "brenoprata10/nvim-highlight-colors", opts = { enable_tailwind = true }, event = "BufEnter *.*" }, -- RGB表記に色を付ける
-	{ "lukas-reineke/indent-blankline.nvim", main = "ibl", config = true },                           -- インデント可視化
-	{ "kylechui/nvim-surround", config = true },                                                      -- 囲み文字を素早く変更
-	{ "windwp/nvim-autopairs", config = true, event = "InsertEnter", },                               -- 自動で括弧補完
-	{ "karb94/neoscroll.nvim", opts = require("configs.neoscroll") },                                 -- スクロールを滑らかにする
-	{ "numToStr/Comment.nvim", opts = require("configs.comment") },                                   -- コメントの切り替え
-	{ "anuvyklack/pretty-fold.nvim", config = true },                                                 -- 折りたたみをリッチにする
-	{ "monaqa/dial.nvim", config = function() require("configs.dial") end }                           -- いろいろなインクリメントに対応
+	{ "brenoprata10/nvim-highlight-colors",     opts = { enable_tailwind = true },                                    event = "BufEnter *.*" }, -- RGB表記に色を付ける
+	{ "lukas-reineke/indent-blankline.nvim",    main = "ibl",                                                         config = true }, -- インデント可視化
+	{ "kylechui/nvim-surround",                 config = true },                                      -- 囲み文字を素早く変更
+	{ "windwp/nvim-autopairs",                  config = true,                                                        event = "InsertEnter", }, -- 自動で括弧補完
+	{ "karb94/neoscroll.nvim",                  opts = require("configs.neoscroll") },                -- スクロールを滑らかにする
+	{ "numToStr/Comment.nvim",                  opts = require("configs.comment") },                  -- コメントの切り替え
+	{ "anuvyklack/pretty-fold.nvim",            config = true },                                      -- 折りたたみをリッチにする
+	{ "monaqa/dial.nvim",                       config = function() require("configs.dial") end },    -- いろいろなインクリメントに対応
 })
 
 vim.api.nvim_create_autocmd("FileType", {
