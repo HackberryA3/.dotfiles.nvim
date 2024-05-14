@@ -29,11 +29,11 @@ table.insert(dap.configurations.cpp,
 		program = function()
 			local filePath = vim.api.nvim_buf_get_name(0)
 			-- 拡張子なしのファイル名を取得
-			local fileName = filePath:match("([^/]+)$"):match("(.+)%..+")
+			local fileName = filePath:match("(.+)%..+$")
 			local ext = vim.fn.has("win32") == 1 and ".exe" or ".out"
 
 			os.execute("g++ -g " .. filePath .. " -o " .. fileName .. ext)
-			vim.notify("Compiled : " .. filePath, level.INFO, { title = "DAP" })
+			vim.notify("Compiled : " .. filePath .. "\n" .. "To : " .. fileName .. ext, level.INFO, { title = "DAP" })
 
 			return fileName .. ext
 		end,
