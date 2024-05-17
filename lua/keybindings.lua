@@ -1,9 +1,10 @@
 local keyset = vim.keymap.set
 local bufKeyset = vim.api.nvim_buf_set_keymap
-local map = { silent = true }
-local noremap = { silent = true, noremap = true }
+local whichKey = require("which-key")
+local map = function(desc) return { desc = desc, silent = true } end
+local noremap = function(desc) return { desc = desc, silent = true, noremap = true } end
 local exprMap = { expr = true, silent = true }
-local exprNoremap = { silent = true, noremap = true, expr = true, replace_keycodes = false }
+local exprNoremap = function(desc) return { desc = desc, silent = true, noremap = true, expr = true, replace_keycodes = false } end
 local exprNoWait = { silent = true, nowait = true, expr = true }
 local nowait = { silent = true, nowait = true }
 
@@ -13,43 +14,50 @@ return {
 		vim.g.maplocalleader = "\\"
 
 		-- Insert Mode //////////////////////////////////////////////////////////////////////////////////
-		keyset("i", "<C-j>", "<ESC>o", map)  -- Ctrl + j で次の行に改行
-		keyset("i", "<C-k>", "<ESC>O", map)  -- Ctrl + k で上の行に改行
-		keyset("i", "<A-j>", "<CMD>m .+1<CR>", map) -- Alt + j で下の行と入れ替え
-		keyset("i", "<A-k>", "<CMD>m .-2<CR>", map) -- Alt + k で上の行と入れ替え
+		keyset("i", "<C-j>", "<ESC>o", map("下の行に改行"))
+		keyset("i", "<C-k>", "<ESC>O", map("上の行に改行"))
+		keyset("i", "<A-j>", "<CMD>m .+1<CR>", map("下の行と入れ替え"))
+		keyset("i", "<A-k>", "<CMD>m .-2<CR>", map("上の行と入れ替え"))
 		-- //////////////////////////////////////////////////////////////////////////////////////////////
 		-- Normal Mode //////////////////////////////////////////////////////////////////////////////////
-		keyset("n", "<A-l>", "<CMD>bn<CR>", map) -- Alt + l で次のバッファに移動
-		keyset("n", "<A-h>", "<CMD>bp<CR>", map) -- Alt + h で前のバッファに移動
-		keyset("n", "<A-j>", "<CMD>m .+1<CR>==", map) -- Alt + j で下の行と入れ替え
-		keyset("n", "<A-k>", "<CMD>m .-2<CR>==", map) -- Alt + k で上の行と入れ替え
-		keyset("n", "<A-a>", "<ESC>ggVG", map) -- Alt + a で全選択
+		keyset("n", "<A-l>", "<CMD>bn<CR>", map("次のバッファに移動"))
+		keyset("n", "<A-h>", "<CMD>bp<CR>", map("前のバッファに移動"))
+		keyset("n", "<A-j>", "<CMD>m .+1<CR>==", map("下の行と入れ替え"))
+		keyset("n", "<A-k>", "<CMD>m .-2<CR>==", map("上の行と入れ替え"))
+		keyset("n", "<A-a>", "<ESC>ggVG", map("全選択"))
 		-- //////////////////////////////////////////////////////////////////////////////////////////////
 		-- Visual Mode //////////////////////////////////////////////////////////////////////////////////
 		-- //////////////////////////////////////////////////////////////////////////////////////////////
 		-- Terminal Mode ////////////////////////////////////////////////////////////////////////////////
-		keyset("t", "<ESC>", [[<C-\><C-n>]], noremap)
+		keyset("t", "<ESC>", [[<C-\><C-n>]], noremap("ノーマルモードに戻る"))
 		-- //////////////////////////////////////////////////////////////////////////////////////////////
 
-		-- Fern ////////////////////////////////////////////////////////////////////////////////////////
-		keyset("n", "<space>e",
-			function()
-				if vim.bo.filetype == "fern" then
-					vim.cmd.wincmd "p"
-				else
-					vim.cmd.Fern(".", "-reveal=%", "-drawer", "-width=40")
-				end
-			end,
-			noremap)
+		-- Filer ////////////////////////////////////////////////////////////////////////////////////////
+		local nvimTreeFocusOrToggle = function()
+			local nvimTree = require("nvim-tree.api")
+			local currentBuf = vim.api.nvim_get_current_buf()
+			local currentBufFt = vim.api.nvim_get_option_value("filetype", { buf = currentBuf })
+			if currentBufFt == "NvimTree" then
+				nvimTree.tree.toggle()
+			else
+				nvimTree.tree.focus()
+			end
+		end
+		keyset("n", "<space>e", nvimTreeFocusOrToggle, noremap("ファイラーを開く"))
 		-- /////////////////////////////////////////////////////////////////////////////////////////////
 
 		-- Telescope ///////////////////////////////////////////////////////////////////////////////////
 		local telescope_builtin = require('telescope.builtin')
-		keyset("n", "<leader>ff", telescope_builtin.find_files, {})
-		keyset("n", "<leader>fg", telescope_builtin.live_grep, {})
-		keyset("n", "<leader>fb", telescope_builtin.buffers, {})
-		keyset("n", "<leader>fh", telescope_builtin.help_tags, {})
-		keyset("n", "<leader>fc", telescope_builtin.commands, {})
+		whichKey.register({
+			["<leader>f"] = {
+				name = "テレスコープ",
+				f = { telescope_builtin.find_files, "ファイルを検索" },
+				g = { telescope_builtin.live_grep, "grep検索" },
+				b = { telescope_builtin.buffers, "バッファを検索" },
+				h = { telescope_builtin.help_tags, "ヘルプを検索" },
+				c = { telescope_builtin.commands, "コマンドを検索" },
+			}
+		})
 		-- /////////////////////////////////////////////////////////////////////////////////////////////
 
 		-- LSP /////////////////////////////////////////////////////////////////////////////////////////
@@ -58,25 +66,30 @@ return {
 		keyset("n", "<A-F12>", "<CMD>Lspsaga peek_definition<CR>")
 		keyset("n", "K", "<CMD>Lspsaga hover_doc<CR>")
 		keyset("n", "<F2>", "<CMD>Lspsaga rename<CR>")
-		keyset("n", "<C-k><C-k>", "<CMD>Lspsaga code_action<CR>")
-		keyset("n", "[g", vim.diagnostic.goto_prev)
-		keyset("n", "]g", vim.diagnostic.goto_next)
-		keyset("n", "<C-k><C-e>", function() vim.lsp.buf.format({ async = true }) end)
+		keyset("n", "<C-k><C-k>", "<CMD>Lspsaga code_action<CR>", noremap("コードアクション"))
+		keyset("n", "[g", vim.diagnostic.goto_prev, noremap("前のエラーに移動"))
+		keyset("n", "]g", vim.diagnostic.goto_next, noremap("次のエラーに移動"))
+		keyset("n", "<C-k><C-e>", function() vim.lsp.buf.format({ async = true }) end, noremap("フォーマット"))
 		-- /////////////////////////////////////////////////////////////////////////////////////////////
 
 		-- DAP /////////////////////////////////////////////////////////////////////////////////////////
 		local dap = require('dap')
 		keyset('n', '<F5>', function() dap.continue() end)
-		keyset('n', '>S-F5>', function() dap.terminate() end)
+		keyset('n', '<S-F5>', function() dap.terminate() end)
 		keyset('n', '<A-F5>', function() dap.run_last() end)
 		keyset('n', '<F10>', function() dap.step_over() end)
 		keyset('n', '<F11>', function() dap.step_into() end)
 		keyset('n', '<S-F11>', function() dap.step_out() end)
-		keyset('n', '<Leader>bb', function() dap.toggle_breakpoint() end)
-		keyset('n', '<Leader>bl', function() dap.toggle_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end)
-		keyset('n', '<Leader>bc', function() dap.toggle_breakpoint(vim.fn.input('Condition: '), nil, nil) end)
-		keyset('n', '<Leader>bh', function() dap.toggle_breakpoint(nil, vim.fn.input('Hit count: '), nil) end)
-		keyset('n', '<Leader>bd', function() dap.clear_breakpoints() end)
+		whichKey.register({
+			["<leader>b"] = {
+				name = "ブレークポイント",
+				b = { function() dap.toggle_breakpoint() end, "ブレークポイント" },
+				l = { function() dap.toggle_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end, "ログポイント" },
+				c = { function() dap.toggle_breakpoint(vim.fn.input('Condition: '), nil, nil) end, "条件付きブレークポイント" },
+				h = { function() dap.toggle_breakpoint(nil, vim.fn.input('Hit count: '), nil) end, "ヒットカウント" },
+				d = { function() dap.clear_breakpoints() end, "全てのブレークポイントを削除" },
+			}
+		})
 		-- /////////////////////////////////////////////////////////////////////////////////////////////
 		-- Code Runner /////////////////////////////////////////////////////////////////////////////////
 		keyset("n", "<F4>", function() vim.cmd("RunCode") end)
@@ -109,25 +122,35 @@ return {
 		end)
 		-- /////////////////////////////////////////////////////////////////////////////////////////////
 
-		keyset("n", "<leader>t", "<CMD>Themery<CR>") -- テーマの切り替え
+		keyset("n", "<leader>t", "<CMD>Themery<CR>", noremap("テーマ切り替え"))
+
+		whichKey.register({
+			["<leader>g"] = {
+				g = { "<CMD>LazyGit<CR>", "Git GUI" },
+			}
+		})
 	end,
 
 	set_githunk_keymap = function(bufnr)
+		local git = require("gitsigns")
 		-- Navigation
-		bufKeyset(bufnr, 'n', ']h', "&diff ? ']h' : '<cmd>Gitsigns next_hunk<CR>'", exprNoremap)
-		bufKeyset(bufnr, 'n', '[h', "&diff ? '[h' : '<cmd>Gitsigns prev_hunk<CR>'", exprNoremap)
+		bufKeyset(bufnr, 'n', ']h', "&diff ? ']h' : '<cmd>Gitsigns next_hunk<CR>'", exprNoremap("次のGit変更"))
+		bufKeyset(bufnr, 'n', '[h', "&diff ? '[h' : '<cmd>Gitsigns prev_hunk<CR>'", exprNoremap("前のGit変更"))
 
 		-- Actions
-		bufKeyset(bufnr, 'n', '<leader>hs', ':Gitsigns stage_hunk<CR>', noremap)
-		bufKeyset(bufnr, 'v', '<leader>hs', ':Gitsigns stage_hunk<CR>', noremap)
-		bufKeyset(bufnr, 'n', '<leader>hr', ':Gitsigns reset_hunk<CR>', noremap)
-		bufKeyset(bufnr, 'v', '<leader>hr', ':Gitsigns reset_hunk<CR>', noremap)
-		bufKeyset(bufnr, 'n', '<leader>hS', '<cmd>Gitsigns stage_buffer<CR>', noremap)
-		bufKeyset(bufnr, 'n', '<leader>hu', '<cmd>Gitsigns undo_stage_hunk<CR>', noremap)
-		bufKeyset(bufnr, 'n', '<leader>hR', '<cmd>Gitsigns reset_buffer<CR>', noremap)
-		bufKeyset(bufnr, 'n', '<leader>hp', '<cmd>Gitsigns preview_hunk<CR>', noremap)
-		bufKeyset(bufnr, 'n', '<leader>hd', '<cmd>Gitsigns diffthis<CR>', noremap)
-		bufKeyset(bufnr, 'n', '<leader>hD', '<cmd>lua require"gitsigns".diffthis("~")<CR>', noremap)
-		bufKeyset(bufnr, 'n', '<leader>td', '<cmd>Gitsigns toggle_deleted<CR>', noremap)
+		whichKey.register({
+			["<leader>g"] = {
+				name = "Git",
+				s = { git.stage_hunk, "ハンクをステージング", buffer = bufnr, mode = {"n", "v"} },
+				S = { git.stage_buffer, "ファイルをステージング", buffer = bufnr },
+				u = { git.undo_stage_hunk, "ステージングをアンドゥ", buffer = bufnr },
+				r = { git.reset_hunk, "ハンクをリセット", buffer = bufnr, mode = {"n", "v"} },
+				R = { git.reset_buffer, "ファイルをリセット", buffer = bufnr },
+				p = { git.preview_hunk_inline, "変更をプレビュー", buffer = bufnr },
+				P = { git.toggle_deleted, "削除されたコードをプレビュー", buffer = bufnr },
+				d = { git.diffthis, "差分を表示", buffer = bufnr },
+				D = { function() git.diffthis('~') end, "差分を表示(HEAD~)", buffer = bufnr },
+			}
+		})
 	end,
 }
