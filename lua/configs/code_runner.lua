@@ -1,5 +1,8 @@
 return {
-	mode = "term",
+	mode = "float",
+	float = {
+		border = "rounded",
+	},
 	focus = true,
 	startinsert = true,
 	filetype = {

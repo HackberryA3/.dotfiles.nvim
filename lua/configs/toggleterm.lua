@@ -6,5 +6,9 @@ return {
 		end
 		return vim.o.shell
 	end,
-	autochdir = true
+	autochdir = true,
+	direction = "float",
+	float_opts = {
+		border = "rounded",
+	}
 }
