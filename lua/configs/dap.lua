@@ -32,7 +32,7 @@ table.insert(dap.configurations.cpp,
 			local fileName = filePath:match("(.+)%..+$")
 			local ext = vim.fn.has("win32") == 1 and ".exe" or ".out"
 
-			os.execute("g++ -g " .. filePath .. " -o " .. fileName .. ext)
+			os.execute("g++ -g " .. filePath .. " -o " .. fileName .. ext .. " -std=c++23")
 			vim.notify("Compiled : " .. filePath .. "\n" .. "To : " .. fileName .. ext, level.INFO, { title = "DAP" })
 
 			return fileName .. ext
