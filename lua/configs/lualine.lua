@@ -18,7 +18,7 @@ local function lsp_names()
 				table.insert(sources, source.name)
 			end
 			table.insert(clients, 'null-ls(' .. table.concat(sources, ', ') .. ')')
-		else -- それ以外は client.name を表示
+		else                        -- それ以外は client.name を表示
 			if client.name == "copilot" then -- copilot は表示しない
 				goto continue
 			end
@@ -72,10 +72,6 @@ return {
 		},
 		lualine_c = {
 			{
-				'filename',
-				symbols = { modified = '●', readonly = '', unnamed = '󱙃', newfile = '󰫻󰫲󰬄' }
-			},
-			{
 				lsp_names,
 				color = function()
 					if lsp_names() == '󱘖 ' then
@@ -127,16 +123,11 @@ return {
 		lualine_y = { 'progress', },
 		lualine_z = {
 			{
-				'datetime',
-				icon = "󰃭",
-				style = "%m/%d"
+				'filename',
+				symbols = { modified = '●', readonly = '', unnamed = '󱙃', newfile = '󰫻󰫲󰬄' },
+				separator = { left = "", right = "" }
 			},
-			{
-				'datetime',
-				icon = "󰥔",
-				style = "%H:%M:%S",
-				separator = { right = "" }
-			},
+
 		}
 	},
 	inactive_sections = {
