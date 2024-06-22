@@ -36,3 +36,9 @@ opt.tabstop = 4 --タブ挿入時の空白数
 opt.shiftwidth = 4 --新しい行の空白数
 
 opt.autoread = true --ファイルが他で変更されたら読み直す
+vim.api.nvim_create_augroup('Autoread', {}) --ファイルが他で変更されて、読み込んだときにLSPを再起動する (clangdがうまく動かなかったから)
+vim.api.nvim_create_autocmd('FileChangedShellPost', {
+	group = "Autoread",
+	command = "e | LspRestart",
+	desc = "Restart lsp when changed the file on disk"
+})
