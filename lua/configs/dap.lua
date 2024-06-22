@@ -3,6 +3,13 @@ local level = vim.log.levels
 -- MasonでインストールしたDAPを設定する
 local loaded_dap = {}
 require("mason-nvim-dap").setup({
+	ensure_installed = {
+		"codelldb",
+		"coreclr",
+		"javadbg",
+		"python"
+	},
+	automatic_installation = true,
 	handlers = {
 		function(config)
 			require("mason-nvim-dap").default_setup(config)

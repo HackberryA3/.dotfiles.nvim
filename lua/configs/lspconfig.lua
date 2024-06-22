@@ -82,7 +82,29 @@ local capabilities = require("cmp_nvim_lsp").default_capabilities()
 capabilities.offsetEncoding = { "utf-16" } -- CopilotとLSPを同時に動かすと、offsetEncodingがバラバラだ！と怒られるので、utf-16に固定する
 
 -- この一連の記述で、mason.nvimでインストールしたLanguage Serverが自動的に個別にセットアップされ、利用可能になります
-require("mason-lspconfig").setup()
+require("mason-lspconfig").setup({
+	ensure_installed = {
+		"clangd",
+		"omnisharp",
+		"jdtls",
+		"pyright",
+		"lua_ls",
+
+		"html",
+		"cssls",
+		"tailwindcss",
+		"tsserver",
+
+		"jsonls",
+		"lemminx",
+		"yamlls",
+
+		"bashls",
+		"powershell_es",
+	},
+	automatic_installation = true,
+})
+
 require("mason-lspconfig").setup_handlers {
 	function(server_name)
 		require("lspconfig")[server_name].setup {
