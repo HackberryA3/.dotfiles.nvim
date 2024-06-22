@@ -63,7 +63,9 @@ return {
 		-- LSP /////////////////////////////////////////////////////////////////////////////////////////
 		keyset("n", "<F12>", "<CMD>Lspsaga goto_definition<CR>")
 		keyset("n", "<S-F12>", "<CMD>Lspsaga finder<CR>")
-		keyset("n", "<A-F12>", "<CMD>Lspsaga peek_definition<CR>")
+		keyset("n", "<F24>", "<CMD>Lspsaga finder<CR>")
+		keyset("n", "<C-F12>", "<CMD>Lspsaga peek_definition<CR>")
+		keyset("n", "<F36>", "<CMD>Lspsaga peek_definition<CR>")
 		keyset("n", "K", "<CMD>Lspsaga hover_doc<CR>")
 		keyset("n", "<F2>", "<CMD>Lspsaga rename<CR>")
 		keyset("n", "<C-k><C-k>", "<CMD>Lspsaga code_action<CR>", noremap("コードアクション"))
@@ -76,10 +78,13 @@ return {
 		local dap = require('dap')
 		keyset('n', '<F5>', function() dap.continue() end)
 		keyset('n', '<S-F5>', function() dap.terminate() end)
+		keyset('n', '<F17>', function() dap.terminate() end)
 		keyset('n', '<A-F5>', function() dap.run_last() end)
+		keyset('n', '<F53>', function() dap.run_last() end)
 		keyset('n', '<F10>', function() dap.step_over() end)
 		keyset('n', '<F11>', function() dap.step_into() end)
 		keyset('n', '<S-F11>', function() dap.step_out() end)
+		keyset('n', '<F23>', function() dap.step_out() end)
 		whichKey.register({
 			["<leader>b"] = {
 				name = "ブレークポイント",
