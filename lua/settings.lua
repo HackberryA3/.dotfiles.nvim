@@ -2,6 +2,7 @@ local opt = vim.opt
 
 opt.mouse = 'a' --マウス有効化
 opt.title = true
+opt.showmode = false --モード表示
 opt.background = "dark"
 if vim.fn.exists('+termguicolors') == 1 and vim.env.TERM_PROGRAM ~= "Apple_Terminal" then
 	opt.termguicolors = true --True Color
@@ -12,13 +13,15 @@ opt.laststatus = 3 -- ステータスラインをグローバル化
 
 opt.updatetime = 200 --CursorHoldが発火されるまでの時間（カーソルを止めてからハイライトされるまでの時間）
 opt.cmdheight = 1
-vim.cmd'set clipboard+=unnamedplus' --クリップボードを共有
+opt.clipboard = 'unnamedplus' --クリップボードを共有
+-- NOTE: vim.cmd'set clipboard+=unnamedplus' 
 
---opt.ambiwidth = 'double' --全角文字表示設定
+-- NOTE: opt.ambiwidth = 'double' --全角文字表示設定
 opt.helplang = 'ja,en' --ヘルプを日本語表示
 
 opt.ignorecase = true --検索時に大文字の違いを無視
 opt.smartcase = true --検索時に大文字があれば、違いを区別
+opt.incsearch = true --検索時に入力毎に検索結果を表示
 
 opt.splitright = true --ウィンドウ分割時に右側に開く
 opt.splitbelow = true --ウィンドウ分割時に下側に開く

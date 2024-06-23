@@ -210,7 +210,10 @@ require("lazy").setup({
 		-- Git
 		{
 			"lewis6991/gitsigns.nvim",
-			opts = require("configs.gitsigns")
+			config = function()
+				require("gitsigns").setup(require("configs.gitsigns"))
+				require("scrollbar.handlers.gitsigns").setup()
+			end,
 		},
 		-- 万能検索 (ripgrepをインストールする必要あり)
 		{
@@ -250,6 +253,17 @@ require("lazy").setup({
 				"nvim-lua/plenary.nvim",
 			}
 		},
+		-- ウェルカムページ
+		{
+			'goolord/alpha-nvim',
+			config = function()
+				require 'alpha'.setup(require 'alpha.themes.theta'.config)
+			end,
+			dependencies = {
+				'nvim-tree/nvim-web-devicons',
+				'nvim-lua/plenary.nvim'
+			}
+		},
 		-- //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -269,6 +283,15 @@ require("lazy").setup({
 			main = "ibl",
 			config = true
 		},
+		-- 今いるコードブロックを上に表示
+		{
+			"nvim-treesitter/nvim-treesitter-context",
+			config = true,
+			opts = {
+				multiline_threshold = 1,
+				mode = "topline",
+			}
+		},
 		-- 囲み文字を素早く変更
 		{
 			"kylechui/nvim-surround",
@@ -280,6 +303,21 @@ require("lazy").setup({
 			config = true,
 			event = "InsertEnter"
 		},
+		-- 言語に合わせたカッコ移動
+		{
+			"andymass/vim-matchup",
+		},
+		-- スクロールバー
+		{
+			"petertriho/nvim-scrollbar",
+			config = true,
+			opts = {
+				handle = {
+					blend = 75,
+					color = "#FFFFFF"
+				}
+			}
+		},
 		-- スクロールを滑らかにする
 		{
 			"karb94/neoscroll.nvim",
@@ -289,6 +327,12 @@ require("lazy").setup({
 		{
 			"numToStr/Comment.nvim",
 			opts = require("configs.comment")
+		},
+		-- TODOコメントを表示
+		{
+			"folke/todo-comments.nvim",
+			config = true,
+			dependencies = { "nvim-lua/plenary.nvim" },
 		},
 		-- 折りたたみをリッチにする
 		{
@@ -300,12 +344,34 @@ require("lazy").setup({
 			"monaqa/dial.nvim",
 			config = function() require("configs.dial") end
 		},
+		-- 色々スワップ
+		{
+			"mizlan/iswap.nvim",
+			event = "VeryLazy"
+		},
+		-- 検索ハイライトの改善
+		{
+			"kevinhwang91/nvim-hlslens",
+			config = function()
+				require("scrollbar.handlers.search").setup()
+			end,
+		},
+		-- カーソルジャンプ
+		{
+			'smoka7/hop.nvim',
+			version = "*",
+			config = true,
+		},
+		-- fでジャンプできる所をハイライト
+		{
+			"unblevable/quick-scope",
+		},
 		-- ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
 		-- テーマ ////////////////////////////////////////////////////////////////////////////////////////////////////
-		{ "zaldih/themery.nvim",   opts = require("configs.themery") },    -- テーマピッカー
+		{ "zaldih/themery.nvim",   opts = require("configs.themery") }, -- テーマピッカー
 		{ "sainnhe/everforest",    priority = 1000 },
 		{ "rebelot/kanagawa.nvim", priority = 1000 },
 		{
@@ -334,7 +400,8 @@ require("lazy").setup({
 		ui = {
 			border = "rounded"
 		}
-	})
+	}
+)
 
 vim.api.nvim_create_autocmd("FileType", {
 	pattern = "json",

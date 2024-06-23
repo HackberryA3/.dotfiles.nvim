@@ -127,7 +127,38 @@ return {
 		end)
 		-- /////////////////////////////////////////////////////////////////////////////////////////////
 
+		-- HlsLens /////////////////////////////////////////////////////////////////////////////////////
+		keyset('n', 'n', [[<Cmd>execute('normal! ' . v:count1 . 'n')<CR><Cmd>lua require('hlslens').start()<CR>]], noremap("検索結果：次へ"))
+		keyset('n', 'N', [[<Cmd>execute('normal! ' . v:count1 . 'N')<CR><Cmd>lua require('hlslens').start()<CR>]], noremap("検索結果：前へ"))
+		keyset('n', '*', [[*<Cmd>lua require('hlslens').start()<CR>]], noremap("カーソル下の単語を下に検索"))
+		keyset('n', '#', [[#<Cmd>lua require('hlslens').start()<CR>]], noremap("カーソル下の単語を上に検索"))
+		keyset('n', 'g*', [[g*<Cmd>lua require('hlslens').start()<CR>]], noremap("カーソル下の単語を下に検索"))
+		keyset('n', 'g#', [[g#<Cmd>lua require('hlslens').start()<CR>]], noremap("カーソル下の単語を上に検索"))
+
+		keyset('n', '<ESC>', '<ESC><Cmd>noh<CR>', noremap(""))
+		-- /////////////////////////////////////////////////////////////////////////////////////////////
+
+		-- Hop /////////////////////////////////////////////////////////////////////////////////////////
+		local hop = require('hop')
+		local directions = require('hop.hint').HintDirection
+		keyset("n", 'f', function()
+			hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true })
+		end, { remap = true })
+		keyset("n", 'F', function()
+			hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true })
+		end, { remap = true })
+		keyset("n", 't', function()
+			hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true, hint_offset = -1 })
+		end, { remap = true })
+		keyset("n", 'T', function()
+			hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true, hint_offset = 1 })
+		end, { remap = true })
+
+		keyset("n", "<leader>j", "<CMD>HopWord<CR>", noremap("単語ジャンプ"))
+		-- /////////////////////////////////////////////////////////////////////////////////////////////
+
 		keyset("n", "<leader>t", "<CMD>Themery<CR>", noremap("テーマ切り替え"))
+		keyset("n", "<leader>s", "<CMD>ISwapWith<CR>", noremap("スワップ"))
 
 		whichKey.register({
 			["<leader>g"] = {
@@ -146,10 +177,10 @@ return {
 		whichKey.register({
 			["<leader>g"] = {
 				name = "Git",
-				s = { git.stage_hunk, "ハンクをステージング", buffer = bufnr, mode = {"n", "v"} },
+				s = { git.stage_hunk, "ハンクをステージング", buffer = bufnr, mode = { "n", "v" } },
 				S = { git.stage_buffer, "ファイルをステージング", buffer = bufnr },
 				u = { git.undo_stage_hunk, "ステージングをアンドゥ", buffer = bufnr },
-				r = { git.reset_hunk, "ハンクをリセット", buffer = bufnr, mode = {"n", "v"} },
+				r = { git.reset_hunk, "ハンクをリセット", buffer = bufnr, mode = { "n", "v" } },
 				R = { git.reset_buffer, "ファイルをリセット", buffer = bufnr },
 				p = { git.preview_hunk_inline, "変更をプレビュー", buffer = bufnr },
 				P = { git.toggle_deleted, "削除されたコードをプレビュー", buffer = bufnr },
