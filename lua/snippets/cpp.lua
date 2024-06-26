@@ -89,6 +89,9 @@ ll inv(ll a, ll mod) {{
 
 ll nCrDP[67][67];
 ll nCr(ll n, ll r) {{
+	assert(n < 67 && r < 67);
+	assert(n >= r);
+	assert(n >= 0 && r >= 0);
     if (nCrDP[n][r] != 0) return nCrDP[n][r];
     if (r == 0 || n == r) return 1;
     return nCrDP[n][r] = nCr(n - 1, r - 1) + nCr(n - 1, r);
@@ -99,6 +102,8 @@ ll nHr(ll n, ll r) {{
 
 unordered_map<ll, vector<ll>> fact, invfact;
 ll nCr(ll n, ll r, ll mod) {{
+	assert(n >= r);
+	assert(n >= 0 && r >= 0);
     if (fact.count(mod) == 0 || fact[mod].size() <= max(n, r)) {{
 		const ll size = max(500000LL, max(n, r));
 		fact[mod] = vector<ll>(size + 1, 0);
