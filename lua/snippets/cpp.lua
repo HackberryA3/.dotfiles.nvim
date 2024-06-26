@@ -535,6 +535,82 @@ table.insert(snip, union_find)
 
 
 
+local cycle_detection = s("cycle_detection", fmt([[
+/** 
+* @brief グラフのサイクル検出 O(V + E)
+* @details 最初に見つけたサイクルを返す
+* @param G 隣接リスト(Edge<T>にfromを設定する必要がある)
+* @param directional 逆流を許すか(無向グラフの場合はfalse)
+* @param all 全ての頂点から探索を開始するか
+* @param start 探索を開始する頂点
+* @return サイクルの辺のリスト
+*/
+template <class T>
+vector<Edge<T>> detect_cycle(const Graph<T> &G, const bool directional = true, const bool all = true, const int start = 0) {{
+	vector<bool> seen(G.size(), false), finished(G.size(), false);
+	stack<Edge<T>> history;
+
+	auto dfs = [&](const auto dfs, const int v, const Edge<T> e) -> int {{
+		seen[v] = true; // たどり着いた
+		history.push(e);
+		
+		for(const Edge<T> next : G[v]) {{
+			// 無向グラフの場合、逆流を禁止する
+			if (!directional && next.to == e.from) continue;
+			if (finished[next.to]) continue;
+			// １回たどり着いた頂点に再度たどり着いた場合、サイクルが検出される
+			if (seen[next.to] && !finished[next.to]) {{
+				history.push(next);
+				return next.to;
+			}}
+
+			int pos = dfs(dfs, next.to, next);
+			if (pos != -1) return pos;
+		}}
+
+		finished[v] = true; // 完全に見終わった
+		history.pop();
+		return -1;
+	}};
+
+	auto restore = [&](const int pos) -> vector<Edge<T>> {{
+		vector<Edge<T>> cycle;
+		// 履歴を、同じ頂点まで遡る
+		while (!history.empty()) {{
+			const Edge<T> e = history.top();
+			cycle.push_back(e);
+			history.pop();
+			if (e.from == pos) break;
+		}}
+		reverse(cycle.begin(), cycle.end());
+		return cycle;
+	}};
+
+	// start から探索を開始
+	int pos = -1;
+	pos = dfs(dfs, start, Edge<T>());
+	if (pos != -1) return restore(pos);
+
+	// all が true の場合、全ての頂点から探索を開始
+	if (all) {{
+		for (int v = 0; v < (int)G.size(); ++v) {{
+			if (seen[v]) continue;
+			history = stack<Edge<T>>();
+			pos = dfs(dfs, v, Edge<T>());
+			if (pos != -1) return restore(pos);
+		}}
+	}}
+
+	// サイクルが見つからなかった場合
+	return vector<Edge<T>>();
+}}
+]],
+	{}
+))
+table.insert(snip, cycle_detection)
+
+
+
 
 
 return snip
