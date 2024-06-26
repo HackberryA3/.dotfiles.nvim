@@ -37,9 +37,9 @@ template <class T> struct Edge
     int to;
     T val;
 
-	Edge() : from(-1), to(-1), val(1) {{}}
-	Edge(const int& i) {{ from = -1, to = i; val = 1; }}
-	Edge(int from, int to) : from(from), to(to), val(1) {{}}
+	Edge() : from(-1), to(-1), val(T()) {{}}
+	Edge(const int& i) : from(-1), to(i), val(T()) {{}} 
+	Edge(int from, int to) : from(from), to(to), val(T()) {{}}
 	Edge(int from, int to, T val) : from(from), to(to), val(val) {{}}
 	bool operator==(const Edge &e) const {{ return from == e.from && to == e.to && val == e.val; }}
 	bool operator!=(const Edge &e) const {{ return from != e.from || to != e.to || val != e.val; }}
