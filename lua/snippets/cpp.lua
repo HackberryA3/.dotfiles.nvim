@@ -266,7 +266,7 @@ while(!q.empty()) {{
 		int nx = x + dx[i];
 		int ny = y + dy[i];
 		if (nx < 0 || {w} <= nx || ny < 0 || {h} <= ny) continue;
-		if (dist[nx][ny] != INF) continue;
+		if (dist[ny][nx] != INF) continue;
 		dist[ny][nx] = dist[y][x] + 1;
 		q.push({{ny, nx}});
 
