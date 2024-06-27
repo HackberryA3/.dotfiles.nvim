@@ -55,6 +55,24 @@ template <class T> using Graph = vector<vector<Edge<T>>>;
 //////////////////////////////////////////////////////////////////
 
 // Math //////////////////////////////////////////////////////////
+/**
+* @brief 拡張ユークリッドの互除法
+*/
+ll ext_gcd(ll a, ll b, ll &x, ll &y) {{
+    if (b == 0) {{
+        x = 1;
+        y = 0;
+        return a;
+    }}
+    ll d = ext_gcd(b, a%b, y, x);
+    y -= a / b * x;
+    return d;
+}}
+/**
+* @brief 負に対応した mod
+*/
+inline ll mmod(ll a, ll mod) {{ return (a % mod + mod) % mod; }}
+
 ll pow(ll a, ll b) {{
 	ll res = 1;
 	while (b > 0) {{
@@ -75,16 +93,13 @@ ll pow(ll a, ll b, ll mod) {{
     return res;
 }}
 /**
- * @brief 法がmodのときのaの逆元を求める
- * @remark modが素数のときのみ有効
- * @remark aとmodが互いに素でなければいけない(割り算の代わりに使う場合は、気にしなくても大丈夫)
- * @details a^(p-1) ≡ 1 mod p -[両辺にa^(-1)を掛ける]-> a^(p-2) ≡ a^(-1) mod p
- * @param a 逆元を求めたい値
- * @param mod 法 
- * @return ll aの逆元
+* @brief 法がmodのときのaの逆元を求める
+* @remark aとmodが互いに素である必要がある
 */
 ll inv(ll a, ll mod) {{
-	return pow(a, mod - 2, mod);
+    ll x, y;
+    ext_gcd(a, mod, x, y);
+    return mmod(x, mod);
 }}
 
 ll nCrDP[67][67];
@@ -100,20 +115,30 @@ ll nHr(ll n, ll r) {{
 	return nCr(n + r - 1, r);
 }}
 
-unordered_map<ll, vector<ll>> fact, invfact;
+vector<ll> fact;
+void calc_fact(ll size) {{
+	assert(size <= 20);
+	fact = vector<ll>(size + 1, 0);
+	fact[0] = 1;
+	for (int i = 0; i < size; ++i) fact[i + 1] = fact[i] * (i + 1);
+}}
+unordered_map<ll, vector<ll>> modfact, modinvfact;
+void calc_fact(ll size, ll mod) {{
+	modfact[mod] = vector<ll>(size + 1, 0);
+	modinvfact[mod] = vector<ll>(size + 1, 0);
+	modfact[mod][0] = 1;
+	for (int i = 0; i < size; ++i) modfact[mod][i + 1] = modfact[mod][i] * (i + 1) % mod;
+	modinvfact[mod][size] = inv(modfact[mod][size], mod);
+	for (int i = size - 1; i >= 0; --i) modinvfact[mod][i] = modinvfact[mod][i + 1] * (i + 1) % mod;
+}}
 ll nCr(ll n, ll r, ll mod) {{
 	assert(n >= r);
 	assert(n >= 0 && r >= 0);
-    if (fact.count(mod) == 0 || fact[mod].size() <= max(n, r)) {{
+    if (modfact.count(mod) == 0 || modfact[mod].size() <= max(n, r)) {{
 		const ll size = max(500000LL, max(n, r));
-		fact[mod] = vector<ll>(size + 1, 0);
-		invfact[mod] = vector<ll>(size + 1, 0);
-        fact[mod][0] = 1;
-        for (int i = 0; i < size; ++i) fact[mod][i + 1] = fact[mod][i] * (i + 1) % mod;
-        invfact[mod][size] = inv(fact[mod][size], mod);
-        for (int i = size - 1; i >= 0; --i) invfact[mod][i] = invfact[mod][i + 1] * (i + 1) % mod;
+		calc_fact(size, mod);
     }}
-    return fact[mod][n] * invfact[mod][r] % mod * invfact[mod][n - r] % mod;
+    return modfact[mod][n] * modinvfact[mod][r] % mod * modinvfact[mod][n - r] % mod;
 }}
 ll nHr(ll n, ll r, ll mod) {{
 	return nCr(n + r - 1, r, mod);
