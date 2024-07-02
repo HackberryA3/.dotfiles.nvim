@@ -30,121 +30,6 @@ constexpr int INF32 = 1001001001;
 constexpr ll MOD = 998244353;
 constexpr ll MOD107 = 1000000007;
 
-// Graph /////////////////////////////////////////////////////////
-template <class T> struct Edge
-{{
-    int from;
-    int to;
-    T val;
-
-	Edge() : from(-1), to(-1), val(T()) {{}}
-	Edge(const int& i) : from(-1), to(i), val(T()) {{}} 
-	Edge(int from, int to) : from(from), to(to), val(T()) {{}}
-	Edge(int from, int to, T val) : from(from), to(to), val(val) {{}}
-	bool operator==(const Edge &e) const {{ return from == e.from && to == e.to && val == e.val; }}
-	bool operator!=(const Edge &e) const {{ return from != e.from || to != e.to || val != e.val; }}
-
-	operator int() const {{ return to; }}
-
-	friend ostream& operator << (ostream& os, const Edge& e) {{
-		os << e.from << " -> " << e.to << " : " << e.val;
-		return os;
-	}}
-}};
-template <class T> using Graph = vector<vector<Edge<T>>>;
-//////////////////////////////////////////////////////////////////
-
-// Math //////////////////////////////////////////////////////////
-/**
-* @brief 拡張ユークリッドの互除法
-*/
-ll ext_gcd(ll a, ll b, ll &x, ll &y) {{
-    if (b == 0) {{
-        x = 1;
-        y = 0;
-        return a;
-    }}
-    ll d = ext_gcd(b, a%b, y, x);
-    y -= a / b * x;
-    return d;
-}}
-/**
-* @brief 負に対応した mod
-*/
-inline ll mmod(ll a, ll mod) {{ return (a % mod + mod) % mod; }}
-
-ll pow(ll a, ll b) {{
-	ll res = 1;
-	while (b > 0) {{
-		if (b & 1) res = res * a;
-		a = a * a;
-		b >>= 1;
-	}}
-	return res;
-}}
-ll pow(ll a, ll b, ll mod) {{
-	if (b < 0) return pow(a, mod - 1 + b, mod);
-    ll res = 1;
-    while (b > 0) {{
-        if (b & 1) res = res * a % mod;
-        a = a * a % mod;
-        b >>= 1;
-    }}
-    return res;
-}}
-/**
-* @brief 法がmodのときのaの逆元を求める
-* @remark aとmodが互いに素である必要がある
-*/
-ll inv(ll a, ll mod) {{
-    ll x, y;
-    ext_gcd(a, mod, x, y);
-    return mmod(x, mod);
-}}
-
-ll nCrDP[67][67];
-ll nCr(ll n, ll r) {{
-	assert(n < 67 && r < 67);
-	assert(n >= r);
-	assert(n >= 0 && r >= 0);
-    if (nCrDP[n][r] != 0) return nCrDP[n][r];
-    if (r == 0 || n == r) return 1;
-    return nCrDP[n][r] = nCr(n - 1, r - 1) + nCr(n - 1, r);
-}}
-ll nHr(ll n, ll r) {{
-	return nCr(n + r - 1, r);
-}}
-
-vector<ll> fact;
-void calc_fact(ll size) {{
-	assert(size <= 20);
-	fact = vector<ll>(size + 1, 0);
-	fact[0] = 1;
-	for (int i = 0; i < size; ++i) fact[i + 1] = fact[i] * (i + 1);
-}}
-unordered_map<ll, vector<ll>> modfact, modinvfact;
-void calc_fact(ll size, ll mod) {{
-	modfact[mod] = vector<ll>(size + 1, 0);
-	modinvfact[mod] = vector<ll>(size + 1, 0);
-	modfact[mod][0] = 1;
-	for (int i = 0; i < size; ++i) modfact[mod][i + 1] = modfact[mod][i] * (i + 1) % mod;
-	modinvfact[mod][size] = inv(modfact[mod][size], mod);
-	for (int i = size - 1; i >= 0; --i) modinvfact[mod][i] = modinvfact[mod][i + 1] * (i + 1) % mod;
-}}
-ll nCr(ll n, ll r, ll mod) {{
-	assert(n >= r);
-	assert(n >= 0 && r >= 0);
-    if (modfact.count(mod) == 0 || modfact[mod].size() <= max(n, r)) {{
-		const ll size = max(500000LL, max(n, r));
-		calc_fact(size, mod);
-    }}
-    return modfact[mod][n] * modinvfact[mod][r] % mod * modinvfact[mod][n - r] % mod;
-}}
-ll nHr(ll n, ll r, ll mod) {{
-	return nCr(n + r - 1, r, mod);
-}}
-//////////////////////////////////////////////////////////////////
-
 // Linear Algebra ////////////////////////////////////////////////
 const double Rad2Deg = 180.0 / M_PI;
 const double Deg2Rad = M_PI / 180.0;
@@ -185,6 +70,18 @@ ostream& operator<<(ostream& os, const vector<vector<T>>& vv) {{
 		if (i != vv.size() - 1) os << "\n";
     }}
     return os;
+}}
+template <typename T>
+istream& operator>>(istream& is, vector<T>& v) {{
+	assert(v.size() > 0);
+	for (int i = 0; i < v.size(); ++i) is >> v[i];
+	return is;
+}}
+template <typename T>
+istream& operator>>(istream& is, vector<vector<T>>& vv) {{
+	assert(vv.size() > 0);
+	for (int i = 0; i < vv.size(); ++i) is >> vv[i];
+	return is;
 }}
 
 struct phash {{
@@ -236,6 +133,149 @@ return 0;
 ]], {}
 ))
 table.insert(snip, icpc)
+
+
+
+local graph = s("graph", fmt([[
+template <class T> struct Edge
+{{
+    int from;
+    int to;
+    T val;
+
+	Edge() : from(-1), to(-1), val(T()) {{}}
+	Edge(const int& i) : from(-1), to(i), val(T()) {{}} 
+	Edge(int from, int to) : from(from), to(to), val(T()) {{}}
+	Edge(int from, int to, T val) : from(from), to(to), val(val) {{}}
+	bool operator==(const Edge &e) const {{ return from == e.from && to == e.to && val == e.val; }}
+	bool operator!=(const Edge &e) const {{ return from != e.from || to != e.to || val != e.val; }}
+	bool operator<(const Edge &e) const {{ return val < e.val; }}
+	bool operator>(const Edge &e) const {{ return val > e.val; }}
+	bool operator<=(const Edge &e) const {{ return val <= e.val; }}
+	bool operator>=(const Edge &e) const {{ return val >= e.val; }}
+
+	operator int() const {{ return to; }}
+
+	friend ostream& operator << (ostream& os, const Edge& e) {{
+		os << e.from << " -> " << e.to << " : " << e.val;
+		return os;
+	}}
+}};
+template <class T> using Graph = vector<vector<Edge<T>>>;
+]],
+	{}
+))
+table.insert(snip, graph)
+
+
+
+local number_theory = s("number_theory", fmt([[
+/**
+ * @brief 拡張ユークリッドの互除法
+ */
+ll ext_gcd(ll a, ll b, ll &x, ll &y) {{
+    if (b == 0) {{
+        x = 1;
+        y = 0;
+        return a;
+    }}
+    ll d = ext_gcd(b, a % b, y, x);
+    y -= a / b * x;
+    return d;
+}}
+/**
+ * @brief 負に対応した mod
+ */
+inline ll mmod(ll a, ll mod) {{
+    return (a % mod + mod) % mod;
+}}
+/**
+ * @brief 法がmodのときのaの逆元を求める
+ * @remark aとmodが互いに素である必要がある
+ */
+ll inv(ll a, ll mod) {{
+    ll x, y;
+    ext_gcd(a, mod, x, y);
+    return mmod(x, mod);
+}}
+
+ll pow(ll a, ll b) {{
+    ll res = 1;
+    while (b > 0) {{
+        if (b & 1) res = res * a;
+        a = a * a;
+        b >>= 1;
+    }}
+    return res;
+}}
+ll pow(ll a, ll b, ll mod) {{
+	bool inverse = b < 0;
+	if (inverse) b = -b;
+    ll res = 1;
+    while (b > 0) {{
+        if (b & 1) res = res * a % mod;
+        a = a * a % mod;
+        b >>= 1;
+    }}
+    return inverse ? inv(res, mod) : res;
+}}
+]],
+	{}
+))
+table.insert(snip, number_theory)
+
+
+
+local combinatorics = s("combinatorics", fmt([[
+ll nCrDP[67][67];
+ll nCr(ll n, ll r) {{
+    assert(n < 67 && r < 67);
+    assert(n >= r);
+    assert(n >= 0 && r >= 0);
+    if (nCrDP[n][r] != 0) return nCrDP[n][r];
+    if (r == 0 || n == r) return 1;
+    return nCrDP[n][r] = nCr(n - 1, r - 1) + nCr(n - 1, r);
+}}
+ll nHr(ll n, ll r) {{
+    return nCr(n + r - 1, r);
+}}
+
+vector<ll> fact;
+void calc_fact(ll size) {{
+    assert(size <= 20);
+    fact = vector<ll>(size + 1, 0);
+    fact[0] = 1;
+    for (int i = 0; i < size; ++i)
+        fact[i + 1] = fact[i] * (i + 1);
+}}
+unordered_map<ll, vector<ll>> modfact, modinvfact;
+void calc_fact(ll size, ll mod) {{
+    modfact[mod] = vector<ll>(size + 1, 0);
+    modinvfact[mod] = vector<ll>(size + 1, 0);
+    modfact[mod][0] = 1;
+    for (int i = 0; i < size; ++i)
+        modfact[mod][i + 1] = modfact[mod][i] * (i + 1) % mod;
+    modinvfact[mod][size] = inv(modfact[mod][size], mod);
+    for (int i = size - 1; i >= 0; --i)
+        modinvfact[mod][i] = modinvfact[mod][i + 1] * (i + 1) % mod;
+}}
+ll nCr(ll n, ll r, ll mod) {{
+    assert(n >= r);
+    assert(n >= 0 && r >= 0);
+    if (modfact.count(mod) == 0 || modfact[mod].size() <= max(n, r)) {{
+        const ll size = max(500000LL, max(n, r));
+        calc_fact(size, mod);
+    }}
+    return modfact[mod][n] * modinvfact[mod][r] % mod * modinvfact[mod][n - r] %
+           mod;
+}}
+ll nHr(ll n, ll r, ll mod) {{
+    return nCr(n + r - 1, r, mod);
+}}
+]],
+	{}
+))
+table.insert(snip, combinatorics)
 
 
 
@@ -633,6 +673,143 @@ vector<Edge<T>> detect_cycle(const Graph<T> &G, const bool directional = true, c
 	{}
 ))
 table.insert(snip, cycle_detection)
+
+
+
+local modint = s("modint", fmt([[
+struct mint
+{{
+  private:
+    long long n;
+    long long mod;
+
+  public:
+    static long long default_mod;
+
+    mint(const mint &m) {{
+        n = m.n;
+        mod = m.mod;
+    }}
+    mint(long long n, long long mod = default_mod) {{
+        if (default_mod == 0) {{
+			default_mod = mod == 0 ? 998244353 : mod;
+			mod = default_mod;
+		}}
+        assert(1 <= mod);
+
+        this->n = (n % mod + mod) % mod;
+        this->mod = mod;
+    }}
+
+    mint inv() const {{
+        assert(gcd(n, mod) == 1);
+        auto ext_gcd = [&](auto f, long long a, long long b, long long &x,
+                           long long &y) -> long long {{
+            if (b == 0) {{
+                x = 1;
+                y = 0;
+                return a;
+            }}
+            long long d = f(f, b, a % b, y, x);
+            y -= a / b * x;
+            return d;
+        }};
+
+        long long x, y;
+        ext_gcd(ext_gcd, n, mod, x, y);
+        return mint((x % mod + mod) % mod, mod);
+    }}
+
+    mint pow(long long exp) const {{
+        bool inverse = exp < 0;
+        if (inverse) exp = -exp;
+
+		ll a = n;
+        ll res = 1;
+        while (exp > 0) {{
+            if (exp & 1) res = res * a % mod;
+            a = a * a % mod;
+            exp >>= 1;
+        }}
+        return (inverse ? mint(res, mod).inv() : mint(res, mod));
+    }}
+
+	mint operator+() const {{ return *this; }}
+	mint operator-() const {{ return 0 - *this; }}
+
+	mint &operator++() {{
+		n++;
+		if (n == mod) n = 0;
+		return *this;
+	}}
+	mint &operator--() {{
+		if (n == 0) n = mod;
+		n--;
+		return *this;
+	}}
+	mint operator++(int) {{
+		mint res = *this;
+		++*this;
+		return res;
+	}}
+	mint operator--(int) {{
+		mint res = *this;
+		--*this;
+		return res;
+	}}
+
+    mint &operator+=(const mint &o) {{
+        assert(mod == o.mod);
+        n += o.n;
+        if (n >= mod) n -= mod;
+        return *this;
+    }}
+    mint &operator-=(const mint &o) {{
+        assert(mod == o.mod);
+        n += mod - o.n;
+        if (n >= mod) n -= mod;
+        return *this;
+    }}
+    mint &operator*=(const mint &o) {{
+        assert(mod == o.mod);
+        n = n * o.n % mod;
+        return *this;
+    }}
+    mint &operator/=(const mint &o) {{
+        assert(mod == o.mod);
+        n = n * o.inv().n % mod;
+        return *this;
+    }}
+    friend mint operator+(const mint &a, const mint &b) {{
+        return mint(a) += b;
+    }}
+    friend mint operator-(const mint &a, const mint &b) {{
+        return mint(a) -= b;
+    }}
+    friend mint operator*(const mint &a, const mint &b) {{
+        return mint(a) *= b;
+    }}
+    friend mint operator/(const mint &a, const mint &b) {{
+        return mint(a) /= b;
+    }}
+
+	friend bool operator==(const mint &a, const mint &b) {{
+		return a.n == b.n && a.mod == b.mod;
+	}}
+	friend bool operator!=(const mint &a, const mint &b) {{
+		return a.n != b.n || a.mod != b.mod;
+	}}
+
+    friend ostream &operator<<(ostream &os, const mint &m) {{
+        os << m.n;
+        return os;
+    }}
+}};
+long long mint::default_mod = 0;
+]],
+	{}
+))
+table.insert(snip, modint)
 
 
 
