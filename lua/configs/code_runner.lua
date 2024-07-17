@@ -18,5 +18,12 @@ return {
 			"-o $fileNameWithoutExt &&",
 			"$dir/$fileNameWithoutExt",
 		},
+		python = function()
+			if vim.loop.os_uname().sysname == "Windows_NT" then
+				return "python -u $fileName"
+			else
+				return "if (which python3 >/dev/null 2>&1); then python3 -u $fileName; else python -u $fileName; fi"
+			end
+		end,
 	}
 }
