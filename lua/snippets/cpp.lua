@@ -402,8 +402,8 @@ DijkstraResult dijkstra(const vector<vector<Edge<T>>> &G, const int start, const
 		{visit}{}
 
 		for (const Edge<T>& e : G[now]) {{
-			if (dist[e.to] <= dist[now] + e.cost) continue;
-			dist[e.to] = dist[now] + e.cost;
+			if (dist[e.to] <= dist[now] + e.val) continue;
+			dist[e.to] = dist[now] + e.val;
 			prev[e.to] = now;
 			q.push({{dist[e.to], e.to}});
 
