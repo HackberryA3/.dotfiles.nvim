@@ -33,6 +33,5 @@ return {
 			colorscheme = "catppuccin-mocha"
 		}
 	},
-	themeConfigFile = vim.fn.stdpath("config") .. "/lua/theme.lua",
 	livePreview = true
 }
