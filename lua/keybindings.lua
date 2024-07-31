@@ -20,11 +20,15 @@ return {
 		keyset("i", "<A-k>", "<CMD>m .-2<CR>", map("上の行と入れ替え"))
 		-- //////////////////////////////////////////////////////////////////////////////////////////////
 		-- Normal Mode //////////////////////////////////////////////////////////////////////////////////
-		keyset("n", "<A-l>", "<CMD>bn<CR>", map("次のバッファに移動"))
-		keyset("n", "<A-h>", "<CMD>bp<CR>", map("前のバッファに移動"))
+		keyset("n", "<C-l>", "<CMD>bn<CR>", map("次のバッファに移動"))
+		keyset("n", "<C-h>", "<CMD>bp<CR>", map("前のバッファに移動"))
 		keyset("n", "<A-j>", "<CMD>m .+1<CR>==", map("下の行と入れ替え"))
 		keyset("n", "<A-k>", "<CMD>m .-2<CR>==", map("上の行と入れ替え"))
 		keyset("n", "<A-a>", "<ESC>ggVG", map("全選択"))
+
+		whichKey.add({
+			{ "<leader>w", proxy = "<c-w>", group = "Windows" },
+		})
 		-- //////////////////////////////////////////////////////////////////////////////////////////////
 		-- Visual Mode //////////////////////////////////////////////////////////////////////////////////
 		-- //////////////////////////////////////////////////////////////////////////////////////////////
@@ -43,20 +47,18 @@ return {
 				nvimTree.tree.focus()
 			end
 		end
-		keyset("n", "<space>e", nvimTreeFocusOrToggle, noremap("ファイラーを開く"))
+		whichKey.add({{ "<leader>e", nvimTreeFocusOrToggle, desc = "ファイラーを開く", icon = "󰉋" }})
 		-- /////////////////////////////////////////////////////////////////////////////////////////////
 
 		-- Telescope ///////////////////////////////////////////////////////////////////////////////////
 		local telescope_builtin = require('telescope.builtin')
-		whichKey.register({
-			["<leader>f"] = {
-				name = "テレスコープ",
-				f = { telescope_builtin.find_files, "ファイルを検索" },
-				g = { telescope_builtin.live_grep, "grep検索" },
-				b = { telescope_builtin.buffers, "バッファを検索" },
-				h = { telescope_builtin.help_tags, "ヘルプを検索" },
-				c = { telescope_builtin.commands, "コマンドを検索" },
-			}
+		whichKey.add({
+			{ "<leader>f", group = "色々検索", icon = "" },
+			{ "<leader>ff", telescope_builtin.find_files, desc = "ファイルを検索", icon = "󰈔" },
+			{ "<leader>fg", telescope_builtin.live_grep, desc = "grep検索", icon = "󰑑" },
+			{ "<leader>fb", telescope_builtin.buffers, desc = "バッファを検索", icon = "󰈔" },
+			{ "<leader>fh", telescope_builtin.help_tags, desc = "ヘルプを検索", icon = "󰋖" },
+			{ "<leader>fc", telescope_builtin.commands, desc = "コマンドを検索", icon = "" },
 		})
 		-- /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -85,15 +87,13 @@ return {
 		keyset('n', '<F11>', function() dap.step_into() end)
 		keyset('n', '<S-F11>', function() dap.step_out() end)
 		keyset('n', '<F23>', function() dap.step_out() end)
-		whichKey.register({
-			["<leader>b"] = {
-				name = "ブレークポイント",
-				b = { function() dap.toggle_breakpoint() end, "ブレークポイント" },
-				l = { function() dap.toggle_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end, "ログポイント" },
-				c = { function() dap.toggle_breakpoint(vim.fn.input('Condition: '), nil, nil) end, "条件付きブレークポイント" },
-				h = { function() dap.toggle_breakpoint(nil, vim.fn.input('Hit count: '), nil) end, "ヒットカウント" },
-				d = { function() dap.clear_breakpoints() end, "全てのブレークポイントを削除" },
-			}
+		whichKey.add({
+			{ "<leader>b", group = "ブレークポイント", icon = "󱀒" },
+			{ "<leader>bb", function() dap.toggle_breakpoint() end, desc = "ブレークポイント" },
+			{ "<leader>bl", function() dap.toggle_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end, desc = "ログポイント", icon = "󱀓" },
+			{ "<leader>bc", function() dap.toggle_breakpoint(vim.fn.input('Condition: '), nil, nil) end, desc = "条件付きブレークポイント", icon = "󰗋" },
+			{ "<leader>bh", function() dap.toggle_breakpoint(nil, vim.fn.input('Hit count: '), nil) end, desc = "ヒットカウント", icon = "󰆙" },
+			{ "<leader>bd", function() dap.clear_breakpoints() end, desc = "全てのブレークポイントを削除", icon = "󰆴" },
 		})
 		-- /////////////////////////////////////////////////////////////////////////////////////////////
 		-- Code Runner /////////////////////////////////////////////////////////////////////////////////
@@ -128,8 +128,10 @@ return {
 		-- /////////////////////////////////////////////////////////////////////////////////////////////
 
 		-- HlsLens /////////////////////////////////////////////////////////////////////////////////////
-		keyset('n', 'n', [[<Cmd>execute('normal! ' . v:count1 . 'n')<CR><Cmd>lua require('hlslens').start()<CR>]], noremap("検索結果：次へ"))
-		keyset('n', 'N', [[<Cmd>execute('normal! ' . v:count1 . 'N')<CR><Cmd>lua require('hlslens').start()<CR>]], noremap("検索結果：前へ"))
+		keyset('n', 'n', [[<Cmd>execute('normal! ' . v:count1 . 'n')<CR><Cmd>lua require('hlslens').start()<CR>]],
+			noremap("検索結果：次へ"))
+		keyset('n', 'N', [[<Cmd>execute('normal! ' . v:count1 . 'N')<CR><Cmd>lua require('hlslens').start()<CR>]],
+			noremap("検索結果：前へ"))
 		keyset('n', '*', [[*<Cmd>lua require('hlslens').start()<CR>]], noremap("カーソル下の単語を下に検索"))
 		keyset('n', '#', [[#<Cmd>lua require('hlslens').start()<CR>]], noremap("カーソル下の単語を上に検索"))
 		keyset('n', 'g*', [[g*<Cmd>lua require('hlslens').start()<CR>]], noremap("カーソル下の単語を下に検索"))
@@ -160,10 +162,9 @@ return {
 		keyset("n", "<leader>t", "<CMD>Themery<CR>", noremap("テーマ切り替え"))
 		keyset("n", "<leader>s", "<CMD>ISwapWith<CR>", noremap("スワップ"))
 
-		whichKey.register({
-			["<leader>g"] = {
-				g = { "<CMD>LazyGit<CR>", "Git GUI" },
-			}
+		whichKey.add({
+			{ "<leader>g",  group = "Git" },
+			{ "<leader>gg", "<CMD>LazyGit<CR>", desc = "LazyGit" }
 		})
 	end,
 
@@ -174,19 +175,16 @@ return {
 		bufKeyset(bufnr, 'n', '[h', "&diff ? '[h' : '<cmd>Gitsigns prev_hunk<CR>'", exprNoremap("前のGit変更"))
 
 		-- Actions
-		whichKey.register({
-			["<leader>g"] = {
-				name = "Git",
-				s = { git.stage_hunk, "ハンクをステージング", buffer = bufnr, mode = { "n", "v" } },
-				S = { git.stage_buffer, "ファイルをステージング", buffer = bufnr },
-				u = { git.undo_stage_hunk, "ステージングをアンドゥ", buffer = bufnr },
-				r = { git.reset_hunk, "ハンクをリセット", buffer = bufnr, mode = { "n", "v" } },
-				R = { git.reset_buffer, "ファイルをリセット", buffer = bufnr },
-				p = { git.preview_hunk_inline, "変更をプレビュー", buffer = bufnr },
-				P = { git.toggle_deleted, "削除されたコードをプレビュー", buffer = bufnr },
-				d = { git.diffthis, "差分を表示", buffer = bufnr },
-				D = { function() git.diffthis('~') end, "差分を表示(HEAD~)", buffer = bufnr },
-			}
+		whichKey.add({
+			{ "<leader>gs", git.stage_hunk, desc = "ハンクをステージング", buffer = bufnr, mode = { "n", "v" } },
+			{ "<leader>gS", git.stage_buffer, desc = "ファイルをステージング", buffer = bufnr },
+			{ "<leader>gu", git.undo_stage_hunk, desc = "ステージングをアンドゥ", buffer = bufnr },
+			{ "<leader>gr", git.reset_hunk, desc = "ハンクをリセット", buffer = bufnr, mode = { "n", "v" } },
+			{ "<leader>gR", git.reset_buffer, desc = "ファイルをリセット", buffer = bufnr },
+			{ "<leader>gp", git.preview_hunk_inline, desc = "変更をプレビュー", buffer = bufnr },
+			{ "<leader>gP", git.toggle_deleted, desc = "削除されたコードをプレビュー", buffer = bufnr },
+			{ "<leader>gd", git.diffthis, desc = "差分を表示", buffer = bufnr },
+			{ "<leader>gD", function() git.diffthis('~') end, desc = "差分を表示(HEAD~)", buffer = bufnr },
 		})
 	end,
 }

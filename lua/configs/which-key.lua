@@ -1,13 +1,15 @@
 return {
-	window = {
+	win = {
 		border = "rounded",
 	},
-	key_labels = {
-		["<space>"] = "󱁐",
-		["<SPACE>"] = "󱁐",
-		["<tab>"] = "󰌒",
-		["<TAB>"] = "󰌒",
-		["<cr>"] = "󰌑",
-		["<CR>"] = "󰌑",
+	replace = {
+		key = {
+			{ "<space>", "󱁐" },
+			{ "<SPACE>", "󱁐" },
+			{ "<tab>", "󰌒" },
+			{ "<TAB>", "󰌒" },
+			{ "<cr>", "󰌑" },
+			{ "<CR>", "󰌑" },
+		}
 	},
 }
