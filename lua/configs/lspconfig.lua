@@ -93,7 +93,7 @@ require("mason-lspconfig").setup({
 		"html",
 		"cssls",
 		"tailwindcss",
-		"tsserver",
+		"ts_ls",
 
 		"jsonls",
 		"lemminx",
