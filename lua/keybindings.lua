@@ -18,8 +18,14 @@ return {
 		keyset("i", "<C-k>", "<ESC>O", map("上の行に改行"))
 		keyset("i", "<A-j>", "<CMD>m .+1<CR>", map("下の行と入れ替え"))
 		keyset("i", "<A-k>", "<CMD>m .-2<CR>", map("上の行と入れ替え"))
+
+		keyset("i", "jj", "<ESC>", noremap("ノーマルモードに戻る"))
 		-- //////////////////////////////////////////////////////////////////////////////////////////////
 		-- Normal Mode //////////////////////////////////////////////////////////////////////////////////
+		keyset("n", "j", "gj", noremap("下の行へ移動"))
+		keyset("n", "k", "gk", noremap("上の行へ移動"))
+		keyset("n", "gj", "j", noremap("下の行へ移動"))
+		keyset("n", "gk", "k", noremap("上の行へ移動"))
 		keyset("n", "<C-l>", "<CMD>bn<CR>", map("次のバッファに移動"))
 		keyset("n", "<C-h>", "<CMD>bp<CR>", map("前のバッファに移動"))
 		keyset("n", "<A-j>", "<CMD>m .+1<CR>==", map("下の行と入れ替え"))
@@ -59,6 +65,9 @@ return {
 			{ "<leader>fb", telescope_builtin.buffers, desc = "バッファを検索", icon = "󰈔" },
 			{ "<leader>fh", telescope_builtin.help_tags, desc = "ヘルプを検索", icon = "󰋖" },
 			{ "<leader>fc", telescope_builtin.commands, desc = "コマンドを検索", icon = "" },
+			{ "<leader>fd", telescope_builtin.diagnostics, desc = "エラーや警告の一覧", icon = ""},
+			{ "<leader>fo", telescope_builtin.treesitter, desc = "アウトラインを表示", icon = ""},
+			{ "<leader>ft", "<CMD>TodoTelescope<CR>", desc = "TODOリストを表示", icon = "" },
 		})
 		-- /////////////////////////////////////////////////////////////////////////////////////////////
 
