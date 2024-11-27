@@ -813,6 +813,98 @@ table.insert(snip, modint)
 
 
 
+local segtree = s("segtree", fmt([[
+template <typename T> class segtree
+{{
+  public:
+    static segtree<T> RangeMinimumQuery(int len) {{
+        return segtree<T>(len, numeric_limits<T>::max(),
+                          [](T a, T b) {{ return min(a, b); }});
+    }}
+
+    static segtree<T> RangeMaximumQuery(int len) {{
+        return segtree<T>(len, numeric_limits<T>::lowest(),
+                          [](T a, T b) {{ return max(a, b); }});
+    }}
+
+    static segtree<T> RangeSumQuery(int len) {{
+        return segtree<T>(len, T(0), [](T a, T b) {{ return a + b; }});
+    }}
+	int length;               // 葉の数
+
+    /**
+     * @brief セグメント木のコンストラクタ
+     * @param len 配列の長さ
+     * @param e 単位元（評価するときの意味のない値。MinQueryの場合、min(x, INF)のINFは意味がない）
+     * @param query クエリ関数
+     */
+    segtree(int len, T e, function<T(T, T)> query)
+        : E(e), length(1), _query(std::move(query)) {{
+        // 要素数を2の冪乗にする
+        while (length < len) {{
+            length <<= 1;
+        }}
+        _data.assign(length * 2 - 1, E);
+    }}
+
+	/**
+	* @remark O(1) 評価しないので、build()を呼ぶこと O(N)
+	*/
+    T& operator[](size_t i) {{
+        if (i < 0 || i >= length) throw out_of_range("Index out of range");
+        return _data[i + length - 1];
+    }}
+
+    // 構築 O(N)
+    void build() {{
+        for (int i = length - 2; i >= 0; --i) {{
+            _data[i] = _query(_data[i * 2 + 1], _data[i * 2 + 2]);
+        }}
+    }}
+
+    // 値を更新 O(log N)
+    void update(int i, T value) {{
+        if (i < 0 || i >= length) throw out_of_range("Index out of range");
+        i += length - 1;
+        _data[i] = value;
+        while (i > 0) {{
+            i = (i - 1) >> 1;
+            _data[i] = _query(_data[i * 2 + 1], _data[i * 2 + 2]);
+        }}
+    }}
+
+    // 区間クエリ [a, b) O(log N)
+    T query(int a, int b) const {{
+		if (a < 0 || b < 0 || a >= length || b > length) throw out_of_range("Index out of range");
+		return _querySub(a, b, 0, 0, length);
+	}}
+
+  private:
+    const T E;                // 単位元
+    vector<T> _data;          // 完全二分木配列
+    function<T(T, T)> _query; // クエリ関数
+
+    // 区間クエリ内部処理
+    T _querySub(int a, int b, int k, int l, int r) const {{
+        if (r <= a || b <= l) {{ // 完全に範囲外
+            return E;
+        }}
+        else if (a <= l && r <= b) {{ // 完全に範囲内
+            return _data[k];
+        }}
+        else {{ // 一部重なる
+            T vl = _querySub(a, b, k * 2 + 1, l, (l + r) / 2);
+            T vr = _querySub(a, b, k * 2 + 2, (l + r) / 2, r);
+            return _query(vl, vr);
+        }}
+    }}
+}};
+]],
+	{}
+))
+table.insert(snip, segtree)
+
+
 
 
 return snip
