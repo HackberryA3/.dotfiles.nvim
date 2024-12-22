@@ -332,8 +332,8 @@ require("lazy").setup({
 		},
 		-- 折りたたみをリッチにする
 		{
-			"anuvyklack/pretty-fold.nvim",
-			config = true
+			-- "anuvyklack/pretty-fold.nvim",
+			-- config = true
 		},
 		-- いろいろなインクリメントに対応
 		{
