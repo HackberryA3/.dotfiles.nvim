@@ -99,6 +99,17 @@ require("lazy").setup({
 			event = "InsertEnter",
 			opts = require("configs.copilot")
 		},
+		{
+			"Exafunction/codeium.nvim",
+			dependencies = {
+				"nvim-lua/plenary.nvim",
+				"hrsh7th/nvim-cmp",
+			},
+			config = function()
+				require("codeium").setup({
+				})
+			end
+		},
 		-- ステータスラインに状態を表示
 		{ "AndreM222/copilot-lualine" },
 		{
