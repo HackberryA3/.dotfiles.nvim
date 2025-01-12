@@ -129,6 +129,7 @@ require("lazy").setup({
 				"hrsh7th/nvim-cmp", -- autocompletion for avante commands and mentions
 				"nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
 				"zbirenbaum/copilot.lua", -- for providers='copilot'
+				'MeanderingProgrammer/render-markdown.nvim',
 				{
 					-- support for image pasting
 					"HakonHarnes/img-clip.nvim",
@@ -146,15 +147,18 @@ require("lazy").setup({
 						},
 					},
 				},
-				{
-					-- Make sure to set this up properly if you have lazy=true
-					'MeanderingProgrammer/render-markdown.nvim',
-					opts = {
-						file_types = { "markdown", "Avante" },
-					},
-					ft = { "markdown", "Avante" },
-				},
 			},
+		},
+		{ 'ryleelyman/latex.nvim',    opts = {} },
+		{
+			'MeanderingProgrammer/render-markdown.nvim',
+			dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' },
+			opts = {
+				latex = { enabled = false },
+				win_options = { conceallevel = { rendered = 2 } },
+				file_types = { 'markdown', 'Avante' },
+			},
+			ft = { 'markdown', 'Avante' },
 		},
 
 
@@ -434,9 +438,9 @@ require("lazy").setup({
 
 
 		-- テーマ ////////////////////////////////////////////////////////////////////////////////////////////////////
-		{ "zaldih/themery.nvim",   opts = require("configs.themery") }, -- テーマピッカー
-		{ "sainnhe/everforest",    priority = 1000 },
-		{ "rebelot/kanagawa.nvim", priority = 1000 },
+		{ "zaldih/themery.nvim",     opts = require("configs.themery") }, -- テーマピッカー
+		{ "sainnhe/everforest",      priority = 1000 },
+		{ "rebelot/kanagawa.nvim",   priority = 1000 },
 		{
 			"catppuccin/nvim",
 			name = "catppuccin",
