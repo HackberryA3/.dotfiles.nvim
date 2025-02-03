@@ -34,12 +34,48 @@ table.insert(dap.configurations.cpp,
 		type = "codelldb",
 		request = "launch",
 		program = function()
+			-- compile_flags.txt が見つかるまで親ディレクトリを探す
+			local root_dir = require("lspconfig").util.root_pattern "compile_flags.txt" (vim.loop.cwd())
+			vim.notify("C++ compile_flags root dir : " .. root_dir)
+
+			-- compile_flags.txt が見つかった場合はその中身をコンパイルオプションとして利用する
+			-- なければデフォルトのオプションを利用する
+			-- -o オプションは必ずデフォルト値を利用する
+			local compile_flags = root_dir and vim.fn.readfile(root_dir .. "/compile_flags.txt") or {}
+
+			-- 読み込んだファイルに-oから始まる行があれば削除する
+			-- 読み込んだファイルにパスが含まれている場合は絶対パスに変換する
+			for i, flag in ipairs(compile_flags) do
+				if flag:find("^-o") then
+					table.remove(compile_flags, i)
+					break
+				end
+				if flag:find("/") then
+					-- flag から先頭のオプションを取得
+					-- 例： -std=c++23 なら -std= を取得, -I../include なら -I を取得
+					local option = flag:match("^%-%w+")
+					-- flagからoptionを削除した部分がパス
+					local path = flag:sub(#option + 1)
+					-- root_dir からの相対パスを絶対パスに変換
+					local absolute_path = vim.fn.fnamemodify(root_dir .. "/" .. path, ":p")
+					compile_flags[i] = option .. absolute_path
+					vim.notify("Converted compile flag path from " .. path .. " to " .. absolute_path)
+				end
+			end
+
 			local filePath = vim.api.nvim_buf_get_name(0)
 			-- 拡張子なしのファイル名を取得
 			local fileName = filePath:match("(.+)%..+$")
 			local ext = vim.fn.has("win32") == 1 and ".exe" or ""
+			table.insert(compile_flags, "-o " .. fileName .. ext)
 
-			os.execute("g++ -g " .. filePath .. " -o " .. fileName .. ext .. " -std=c++23")
+			local compile_flags_str = table.concat(compile_flags, " ")
+			vim.notify("C++ compile_flags : " .. compile_flags_str)
+
+
+
+
+			os.execute("g++ -g " .. filePath .. " " .. compile_flags_str)
 			vim.notify("Compiled : " .. filePath .. "\n" .. "To : " .. fileName .. ext, level.INFO, { title = "DAP" })
 
 			return fileName .. ext
