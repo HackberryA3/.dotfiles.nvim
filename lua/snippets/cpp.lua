@@ -226,6 +226,72 @@ table.insert(snip, number_theory)
 
 
 
+local eratosthenes = s("eratosthenes", fmt([[
+vector<bool> sieve(const ll n) {{
+	vector<bool> is_prime(n + 1, true);
+	is_prime[0] = is_prime[1] = false;
+	for (ll i = 2; i * i <= n; ++i) {{
+		if (!is_prime[i]) continue;
+		for (ll j = i * i; j <= n; j += i) is_prime[j] = false;
+	}}
+	return is_prime;
+}}
+
+vector<ll> primes(const ll n) {{
+	vector<bool> is_prime(n + 1, true);
+	vector<ll> res;
+	is_prime[0] = is_prime[1] = false;
+	for (ll i = 2; i <= n; ++i) {{
+		if (!is_prime[i]) continue;
+		res.push_back(i);
+		for (ll j = i * i; j <= n; j += i) is_prime[j] = false;
+	}}
+	return res;
+}}
+]],
+	{}
+))
+table.insert(snip, eratosthenes)
+
+local enum_divisors = s("enum_divisors", fmt([[
+vector<ll> enum_divisors(ll n) {{
+	vector<ll> res;
+	for (ll i = 1; i * i <= n; ++i) {{
+		if (n % i == 0) {{
+			res.push_back(i);
+			if (i * i != n) res.push_back(n / i);
+		}}
+	}}
+	sort(res.begin(), res.end());
+	return res;
+}}
+]],
+	{}
+))
+table.insert(snip, enum_divisors)
+
+local prime_factorization = s("prime_factorization", fmt([[
+vector<pair<ll, ll>> prime_factorization(ll n) {{
+	vector<pair<ll, ll>> res;
+	for (ll i = 2; i * i <= n; ++i) {{
+		if (n % i != 0) continue;
+		ll ex = 0;
+		while (n % i == 0) {{
+			++ex;
+			n /= i;
+		}}
+		res.push_back({{i, ex}});
+	}}
+	if (n != 1) res.push_back({{n, 1}});
+	return res;
+}}
+]],
+	{}
+))
+table.insert(snip, prime_factorization)
+
+
+
 local combinatorics = s("combinatorics", fmt([[
 ll nCrDP[67][67];
 ll nCr(ll n, ll r) {{
