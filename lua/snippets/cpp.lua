@@ -345,6 +345,311 @@ table.insert(snip, combinatorics)
 
 
 
+local linked_list = s("linked_list", fmt([[
+template <class T, typename Hash = hash<T>> class LinkedList
+{{
+  public:
+    struct Node
+    {{
+        T val;
+        Node *next;
+        Node *prev;
+        Node(T val) : val(val) {{}}
+    }};
+
+    Node *head;
+    Node *tail;
+
+  private:
+    unordered_map<T, unordered_set<Node *>, Hash> mp;
+    size_t length;
+
+  public:
+    LinkedList() {{
+        head = nullptr;
+        tail = nullptr;
+    }}
+    size_t size() {{ return length; }}
+
+	/** 
+	* @brief valの値を持つNodeの先頭を返す O(1)
+	* @param val 検索する値
+	* @return Node* valの値を持つNodeの先頭
+	* @return nullptr valの値を持つNodeが存在しない場合
+	*/
+    Node *first(T val) {{
+        if (mp[val].empty()) return nullptr;
+        return *mp[val].begin();
+    }}
+	/**
+	* @brief valの値を持つNodeの末尾を返す O(1)
+	* @param val 検索する値
+	* @return Node* valの値を持つNodeの末尾
+	* @return nullptr valの値を持つNodeが存在しない場合
+	*/
+    Node *last(T val) {{
+        if (mp[val].empty()) return nullptr;
+        return *mp[val].rbegin();
+    }}
+	/**
+	* @brief valの値を持つNodeの集合を返す O(1)
+	* @param val 検索する値
+	* @return unordered_set<Node*> valの値を持つNodeの集合
+	*/
+    unordered_set<Node *> find(T val) {{ return mp[val]; }}
+
+	/**
+	* @brief nodeの後ろにvalの値を持つNodeを挿入する O(1)
+	* @param val 挿入する値
+	* @param node 挿入する位置のNode
+	* @return Node* 挿入されたNode
+	*/
+    Node *insertAfter(T val, Node *node) {{
+        Node *new_node = new Node(val);
+        length++;
+        mp[val].insert(new_node);
+
+        if (node == nullptr) {{
+            assert(head == nullptr);
+            assert(tail == nullptr);
+            head = tail = new_node;
+            return new_node;
+        }}
+        new_node->next = node->next;
+        new_node->prev = node;
+        node->next = new_node;
+        if (new_node->next == nullptr) tail = new_node;
+        else new_node->next->prev = new_node;
+        return new_node;
+    }}
+	/**
+	* @brief idx番目のNodeの後ろにvalの値を持つNodeを挿入する O(N / 2)
+	* @param val 挿入する値
+	* @param idx 挿入する位置のインデックス
+	* @return Node* 挿入されたNode
+	*/
+    Node *insertAfter(T val, int idx) {{
+		assert(0 <= idx && idx < length);
+        if (length / 2 >= idx) {{
+            Node *node = head;
+            rep(i, idx) {{
+                assert(node != nullptr);
+                node = node->next;
+            }}
+            return insertAfter(val, node);
+        }}
+        else {{
+            Node *node = tail;
+            rep(i, length - idx - 1) {{
+                assert(node != nullptr);
+                node = node->prev;
+            }}
+            return insertAfter(val, node);
+        }}
+    }}
+	/**
+	* @brief xの値を持つNodeの後ろにvalの値を持つNodeを挿入する O(1)
+	* @param val 挿入する値
+	* @param x 挿入する位置の値
+	* @return Node* 挿入されたNode
+	* @remark xの値を持つNodeが複数存在する場合はエラー
+	*/
+    Node *insertAfter(T val, T x) {{
+        assert(mp.count(x));
+        assert(mp[x].size() == 1);
+        return insertAfter(val, *mp[x].begin());
+    }}
+	/**
+	* @brief nodeの前にvalの値を持つNodeを挿入する O(1)
+	* @param val 挿入する値
+	* @param node 挿入する位置のNode
+	* @return Node* 挿入されたNode
+	*/
+    Node *insertBefore(T val, Node *node) {{
+        Node *new_node = new Node(val);
+        length++;
+        mp[val].insert(new_node);
+
+        if (node == nullptr) {{
+            assert(head == nullptr);
+            assert(tail == nullptr);
+            head = tail = new_node;
+            return new_node;
+        }}
+        new_node->next = node;
+        new_node->prev = node->prev;
+        node->prev = new_node;
+
+        if (new_node->prev == nullptr) head = new_node;
+        else new_node->prev->next = new_node;
+        return new_node;
+    }}
+	/**
+	* @brief idx番目のNodeの前にvalの値を持つNodeを挿入する O(N / 2)
+	* @param val 挿入する値
+	* @param idx 挿入する位置のインデックス
+	* @return Node* 挿入されたNode
+	*/
+    Node *insertBefore(T val, int idx) {{
+        if (length / 2 >= idx) {{
+            Node *node = head;
+            rep(i, idx) {{
+                assert(node != nullptr);
+                node = node->next;
+            }}
+            return insertBefore(val, node);
+        }}
+        else {{
+            Node *node = tail;
+            rep(i, length - idx - 1) {{
+                assert(node != nullptr);
+                node = node->prev;
+            }}
+            return insertBefore(val, node);
+        }}
+    }}
+	/**
+	* @brief xの値を持つNodeの前にvalの値を持つNodeを挿入する O(1)
+	* @param val 挿入する値
+	* @param x 挿入する位置の値
+	* @return Node* 挿入されたNode
+	* @remark xの値を持つNodeが複数存在する場合はエラー
+	*/
+    Node *insertBefore(T val, T x) {{
+        assert(mp.count(x));
+        assert(mp[x].size() == 1);
+        return insertBefore(val, *mp[x].begin());
+    }}
+    Node *push_front(T val) {{ return insertBefore(val, head); }}
+    Node *push_back(T val) {{ return insertAfter(val, tail); }}
+	/**
+	* @brief nodeを削除する O(1)
+	* @param node 削除するNode
+	*/
+    void erase(Node *node) {{
+        length--;
+        mp[node->val].erase(node);
+
+        if (node->prev == nullptr) head = node->next;
+        else node->prev->next = node->next;
+        if (node->next == nullptr) tail = node->prev;
+        else node->next->prev = node->prev;
+        delete node;
+    }}
+	/**
+	* @brief valの値を持つNodeを削除する O(1)
+	* @param val 削除する値
+	* @remark valの値を持つNodeが複数存在する場合はエラー
+	*/
+    void erase(T val) {{
+        assert(mp.count(val));
+        assert(mp[val].size() == 1);
+        erase(*mp[val].begin());
+    }}
+	/**
+	* @brief idx番目のNodeを削除する O(N / 2)
+	* @param idx 削除する位置のインデックス
+	*/
+    void erase(int idx) {{
+        if (length / 2 >= idx) {{
+            Node *node = head;
+            rep(i, idx) {{
+                assert(node != nullptr);
+                node = node->next;
+            }}
+            erase(node);
+        }}
+        else {{
+            Node *node = tail;
+            rep(i, length - idx - 1) {{
+                assert(node != nullptr);
+                node = node->prev;
+            }}
+            erase(node);
+        }}
+    }}
+    T pop_front() {{
+        T val = head->val;
+        erase(head);
+        return val;
+    }}
+    T pop_back() {{
+        T val = tail->val;
+        erase(tail);
+        return val;
+    }}
+
+	/**
+	* @brief LinkedListをクリアする O(N)
+	*/
+	void clear() {{
+		while (head) {{
+			Node *node = head;
+			head = head->next;
+			delete node;
+		}}
+		tail = nullptr;
+		length = 0;
+		mp.clear();
+	}}
+
+    class iterator
+    {{
+      private:
+        Node *current;
+
+      public:
+        using iterator_category = std::bidirectional_iterator_tag;
+        using value_type = T;
+        using difference_type = std::ptrdiff_t;
+        using pointer = T *;
+        using reference = T &;
+
+        iterator(Node *node) : current(node) {{}}
+
+        T &operator*() {{ return current->val; }}
+
+        iterator &operator++() {{
+            if (current) current = current->next;
+            return *this;
+        }}
+        iterator operator++(int) {{
+            iterator temp = *this;
+            if (current) current = current->next;
+            return temp;
+        }}
+        iterator &operator--() {{
+            if (current) current = current->prev;
+            return *this;
+        }}
+        iterator operator--(int) {{
+            iterator temp = *this;
+            if (current) current = current->prev;
+            return temp;
+        }}
+
+        bool operator==(const iterator &other) const {{
+            return current == other.current;
+        }}
+        bool operator!=(const iterator &other) const {{
+            return current != other.current;
+        }}
+    }};
+
+    iterator begin() {{ return iterator(head); }}
+    iterator end() {{ return iterator(nullptr); }}
+    iterator rbegin() {{ return iterator(tail); }}
+    iterator rend() {{ return iterator(nullptr); }}
+    Node *front() {{ return head; }}
+    Node *back() {{ return tail; }}
+}};
+]],
+	{}
+))
+table.insert(snip, linked_list)
+
+
+
 local bfs = s("bfs", fmt([[
 vll dist({n}, INF);
 queue<int> q;
