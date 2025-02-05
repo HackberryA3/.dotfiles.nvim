@@ -55,6 +55,24 @@ inline bool chmin(T &a, const T &b) {{
 	return false;
 }}
 
+template <typename Container,
+          typename = std::enable_if_t<
+              !std::is_same_v<Container, std::string> &&
+              std::is_convertible_v<decltype(std::declval<Container>().begin()),
+                                    typename Container::iterator>>>
+ostream &operator<<(ostream &os, const Container &container) {{
+    auto it = container.begin();
+    auto end = container.end();
+
+    if (it != end) {{
+        os << *it;
+        ++it;
+    }}
+	for (; it != end; ++it) {{
+		os << " " << *it;
+	}}
+    return os;
+}}
 template <typename T>
 ostream& operator<<(ostream& os, const vector<T>& v) {{
     for (size_t i = 0; i < v.size(); ++i) {{
@@ -636,12 +654,12 @@ template <class T, typename Hash = hash<T>> class LinkedList
         }}
     }};
 
-    iterator begin() {{ return iterator(head); }}
-    iterator end() {{ return iterator(nullptr); }}
-    iterator rbegin() {{ return iterator(tail); }}
-    iterator rend() {{ return iterator(nullptr); }}
-    Node *front() {{ return head; }}
-    Node *back() {{ return tail; }}
+    iterator begin() const {{ return iterator(head); }}
+    iterator end() const {{ return iterator(nullptr); }}
+    iterator rbegin() const {{ return iterator(tail); }}
+    iterator rend() const {{ return iterator(nullptr); }}
+    Node *front() const {{ return head; }}
+    Node *back() const {{ return tail; }}
 }};
 ]],
 	{}
