@@ -25,8 +25,8 @@ using PPLL = pair<ll, PLL>;
 #define rep(i, n) for(ll i = 0; i < n; ++i)
 #define loop(i, a, b) for(ll i = a; i <= b; ++i)
 #define all(v) v.begin(), v.end()
-constexpr ll INF = 1001001001001001001LL;
-constexpr int INF32 = 1001001001;
+constexpr ll INF = 9009009009009009009LL;
+constexpr int INF32 = 2002002002;
 constexpr ll MOD = 998244353;
 constexpr ll MOD107 = 1000000007;
 
