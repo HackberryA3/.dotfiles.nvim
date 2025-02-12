@@ -36,7 +36,7 @@ table.insert(dap.configurations.cpp,
 		program = function()
 			-- compile_flags.txt が見つかるまで親ディレクトリを探す
 			local root_dir = require("lspconfig").util.root_pattern "compile_flags.txt" (vim.loop.cwd())
-			vim.notify("C++ compile_flags root dir : " .. root_dir)
+			vim.notify("C++ compile_flags root dir : " .. (root_dir or "nil"))
 
 			-- compile_flags.txt が見つかった場合はその中身をコンパイルオプションとして利用する
 			-- なければデフォルトのオプションを利用する
