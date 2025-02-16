@@ -92,13 +92,13 @@ ostream& operator<<(ostream& os, const vector<vector<T>>& vv) {{
 template <typename T>
 istream& operator>>(istream& is, vector<T>& v) {{
 	assert(v.size() > 0);
-	for (int i = 0; i < v.size(); ++i) is >> v[i];
+	for (size_t i = 0; i < v.size(); ++i) is >> v[i];
 	return is;
 }}
 template <typename T>
 istream& operator>>(istream& is, vector<vector<T>>& vv) {{
 	assert(vv.size() > 0);
-	for (int i = 0; i < vv.size(); ++i) is >> vv[i];
+	for (size_t i = 0; i < vv.size(); ++i) is >> vv[i];
 	return is;
 }}
 
@@ -466,18 +466,6 @@ template <class T, typename Hash = hash<T>> class LinkedList
         }}
     }}
 	/**
-	* @brief xの値を持つNodeの後ろにvalの値を持つNodeを挿入する O(1)
-	* @param val 挿入する値
-	* @param x 挿入する位置の値
-	* @return Node* 挿入されたNode
-	* @remark xの値を持つNodeが複数存在する場合はエラー
-	*/
-    Node *insertAfter(T val, T x) {{
-        assert(mp.count(x));
-        assert(mp[x].size() == 1);
-        return insertAfter(val, *mp[x].begin());
-    }}
-	/**
 	* @brief nodeの前にvalの値を持つNodeを挿入する O(1)
 	* @param val 挿入する値
 	* @param node 挿入する位置のNode
@@ -526,18 +514,6 @@ template <class T, typename Hash = hash<T>> class LinkedList
             return insertBefore(val, node);
         }}
     }}
-	/**
-	* @brief xの値を持つNodeの前にvalの値を持つNodeを挿入する O(1)
-	* @param val 挿入する値
-	* @param x 挿入する位置の値
-	* @return Node* 挿入されたNode
-	* @remark xの値を持つNodeが複数存在する場合はエラー
-	*/
-    Node *insertBefore(T val, T x) {{
-        assert(mp.count(x));
-        assert(mp[x].size() == 1);
-        return insertBefore(val, *mp[x].begin());
-    }}
     Node *push_front(T val) {{ return insertBefore(val, head); }}
     Node *push_back(T val) {{ return insertAfter(val, tail); }}
 	/**
@@ -553,16 +529,6 @@ template <class T, typename Hash = hash<T>> class LinkedList
         if (node->next == nullptr) tail = node->prev;
         else node->next->prev = node->prev;
         delete node;
-    }}
-	/**
-	* @brief valの値を持つNodeを削除する O(1)
-	* @param val 削除する値
-	* @remark valの値を持つNodeが複数存在する場合はエラー
-	*/
-    void erase(T val) {{
-        assert(mp.count(val));
-        assert(mp[val].size() == 1);
-        erase(*mp[val].begin());
     }}
 	/**
 	* @brief idx番目のNodeを削除する O(N / 2)
@@ -1292,6 +1258,121 @@ template <typename T> class segtree
 	{}
 ))
 table.insert(snip, segtree)
+
+
+
+local trie = s("trie", fmt([[
+template <int char_size, int base>
+struct Trie {{
+	struct Node {{
+		vector<Node*> next;
+		vector<int> accept;
+		int c;
+		int common;
+		Node(int c) : c(c), common(0) {{
+			next.assign(char_size, nullptr);
+		}}
+	}};
+
+	vector<Node*> nodes;
+	Node* root;
+	Trie() : root(new Node(-1)) {{
+		nodes.push_back(root);
+	}}
+
+	/**
+	 * @brief 文字列sをTrie木に挿入する O(|s|)
+	 * @param s 挿入する文字列
+	 * @param id 挿入する文字列のID(文字列の終端のノードにIDを保存しておく)
+	 */
+	void insert(const string& s, int id) {{
+		Node* now = root;
+		now->common++;
+		for (size_t i = 0; i < s.size(); ++i) {{
+			int c = s[i] - base;
+			if (now->next[c] == nullptr) {{
+				now->next[c] = new Node(c);
+				nodes.push_back(now->next[c]);
+			}}
+			now = now->next[c];
+			now->common++;
+		}}
+		now->accept.push_back(id);
+	}}
+
+	/**
+	 * @brief 文字列sと完全一致する文字列がTrie木にいくつあるかを返す O(|s|)
+	 */
+	int count(const string& s) {{
+		Node* now = root;
+		for (size_t i = 0; i < s.size(); ++i) {{
+			int c = s[i] - base;
+			if (now->next[c] == nullptr) return 0;
+			now = now->next[c];
+		}}
+		return now->accept.size();
+	}}
+
+	/**
+	 * @brief 文字列sで始まる文字列がTrie木にいくつあるかを返す O(|s|)
+	 */
+	int start_with(const string& s) {{
+		Node* now = root;
+		for (size_t i = 0; i < s.size(); ++i) {{
+			int c = s[i] - base;
+			if (now->next[c] == nullptr) return 0;
+			now = now->next[c];
+		}}
+		return now->common;
+	}}
+
+	/**
+	 * @brief 文字列sと共通する最長の接頭辞を返す O(|s|)
+	 */
+	string common_prefix(const string& s) {{
+		Node* now = root;
+		for (size_t i = 0; i < s.size(); ++i) {{
+			int c = s[i] - base;
+			if (now->next[c] == nullptr) return s.substr(0, i);
+			now = now->next[c];
+		}}
+		return s;
+	}}
+
+	/**
+	 * @brief 文字列sと共通する接頭辞を持つ文字列の個数の最大値を返す O(|s|)
+	 */
+	int common_prefix_max(const string& s) {{
+		Node* now = root;
+		int mx = 0;
+		for (size_t i = 0; i < s.size(); ++i) {{
+			int c = s[i] - base;
+			if (now->next[c] == nullptr) return mx;
+			now = now->next[c];
+			mx = max(mx, now->common);
+		}}
+		return mx;
+	}}
+
+	/**
+	 * @brief 文字列sと共通する接頭辞の合計の長さを返す O(|s|)
+	 */
+	int common_prefix_sum(const string& s) {{
+		Node* now = root;
+		int sum = 0;
+		for (size_t i = 0; i < s.size(); ++i) {{
+			int c = s[i] - base;
+			if (now->next[c] == nullptr) return sum;
+			now = now->next[c];
+			sum += now->common;
+		}}
+		return sum;
+	}}
+}};
+]],
+	{}
+))
+table.insert(snip, trie)
 
 
 
