@@ -16,6 +16,7 @@ local atcoder = s("atcoder", fmt([[
 #include <bits/stdc++.h>
 using namespace std;
 using ll = long long;
+using ull = unsigned long long;
 using vll = vector<ll>;
 using vvll = vector<vll>;
 using P = pair<int, int>;
@@ -23,6 +24,7 @@ using PP = pair<int, P>;
 using PLL = pair<ll, ll>;
 using PPLL = pair<ll, PLL>;
 #define rep(i, n) for(ll i = 0; i < n; ++i)
+#define rrep(i, n) for(ll i = n - 1; i >= 0; --i)
 #define loop(i, a, b) for(ll i = a; i <= b; ++i)
 #define all(v) v.begin(), v.end()
 #define nC2(n) n * (n - 1) / 2
@@ -650,6 +652,19 @@ template <class T> struct Edge
 	}}
 }};
 template <class T> using Graph = vector<vector<Edge<T>>>;
+
+template <class T>
+vector<vector<T>> inverseGraph(const vector<vector<T>>& G) {{
+	vector<vector<T>> rG(G.size());
+	rep(i, G.size()) for (const T& e : G[i]) rG[e].push_back(i);
+	return rG;
+}}
+template <class T>
+vector<vector<Edge<T>>> inverseGraph(const vector<vector<Edge<T>>>& G) {{
+	vector<vector<Edge<T>>> rG(G.size());
+	rep(i, G.size()) for (const Edge<T>& e : G[i]) rG[e.to].push_back(Edge<T>(e.to, e.from, e.val));
+	return rG;
+}}
 ]],
 	{}
 ))
@@ -1147,6 +1162,8 @@ struct SCC
 		search_components();
 		rebuild();
     }}
+
+	vector<vector<int>> get_rebuilded_graph() const {{ return rebuildedG; }}
 
 	size_t size() const {{ return component_count; }}
 	/**
