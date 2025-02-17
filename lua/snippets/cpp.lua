@@ -25,6 +25,7 @@ using PPLL = pair<ll, PLL>;
 #define rep(i, n) for(ll i = 0; i < n; ++i)
 #define loop(i, a, b) for(ll i = a; i <= b; ++i)
 #define all(v) v.begin(), v.end()
+#define nC2(n) n * (n - 1) / 2
 constexpr ll INF = 9009009009009009009LL;
 constexpr int INF32 = 2002002002;
 constexpr ll MOD = 998244353;
@@ -154,39 +155,6 @@ table.insert(snip, icpc)
 
 
 
-local graph = s("graph", fmt([[
-template <class T> struct Edge
-{{
-    int from;
-    int to;
-    T val;
-
-	Edge() : from(-1), to(-1), val(T()) {{}}
-	Edge(const int& i) : from(-1), to(i), val(T()) {{}} 
-	Edge(int from, int to) : from(from), to(to), val(T()) {{}}
-	Edge(int from, int to, T val) : from(from), to(to), val(val) {{}}
-	bool operator==(const Edge &e) const {{ return from == e.from && to == e.to && val == e.val; }}
-	bool operator!=(const Edge &e) const {{ return from != e.from || to != e.to || val != e.val; }}
-	bool operator<(const Edge &e) const {{ return val < e.val; }}
-	bool operator>(const Edge &e) const {{ return val > e.val; }}
-	bool operator<=(const Edge &e) const {{ return val <= e.val; }}
-	bool operator>=(const Edge &e) const {{ return val >= e.val; }}
-
-	operator int() const {{ return to; }}
-
-	friend ostream& operator << (ostream& os, const Edge& e) {{
-		os << e.from << " -> " << e.to << " : " << e.val;
-		return os;
-	}}
-}};
-template <class T> using Graph = vector<vector<Edge<T>>>;
-]],
-	{}
-))
-table.insert(snip, graph)
-
-
-
 local number_theory = s("number_theory", fmt([[
 /**
  * @brief 拡張ユークリッドの互除法
@@ -245,6 +213,11 @@ table.insert(snip, number_theory)
 
 
 local eratosthenes = s("eratosthenes", fmt([[
+/**
+ * @brief エラトステネスの篩 O(N log log N)
+ * @param n 素数を求める範囲
+ * @return vector<bool> xが素数かどうか
+ */
 vector<bool> sieve(const ll n) {{
 	vector<bool> is_prime(n + 1, true);
 	is_prime[0] = is_prime[1] = false;
@@ -255,6 +228,11 @@ vector<bool> sieve(const ll n) {{
 	return is_prime;
 }}
 
+/**
+ * @brief エラトステネスの篩 O(N log log N)
+ * @param n 素数を求める範囲
+ * @return vector<ll> 素数のリスト
+ */
 vector<ll> primes(const ll n) {{
 	vector<bool> is_prime(n + 1, true);
 	vector<ll> res;
@@ -272,6 +250,11 @@ vector<ll> primes(const ll n) {{
 table.insert(snip, eratosthenes)
 
 local enum_divisors = s("enum_divisors", fmt([[
+/**
+ * @brief 約数列挙 O(√N)
+ * @param n 約数を求める数
+ * @return vector<ll> 約数のリスト
+ */
 vector<ll> enum_divisors(ll n) {{
 	vector<ll> res;
 	for (ll i = 1; i * i <= n; ++i) {{
@@ -289,6 +272,11 @@ vector<ll> enum_divisors(ll n) {{
 table.insert(snip, enum_divisors)
 
 local prime_factorization = s("prime_factorization", fmt([[
+/**
+ * @brief 素因数分解 O(√N)
+ * @param n 素因数分解する数
+ * @return vector<pair<ll, ll>> 素因数とその指数のリスト
+ */
 vector<pair<ll, ll>> prime_factorization(ll n) {{
 	vector<pair<ll, ll>> res;
 	for (ll i = 2; i * i <= n; ++i) {{
@@ -631,6 +619,41 @@ template <class T, typename Hash = hash<T>> class LinkedList
 	{}
 ))
 table.insert(snip, linked_list)
+
+
+
+
+
+local graph = s("graph", fmt([[
+template <class T> struct Edge
+{{
+    int from;
+    int to;
+    T val;
+
+	Edge() : from(-1), to(-1), val(T()) {{}}
+	Edge(const int& i) : from(-1), to(i), val(T()) {{}} 
+	Edge(int from, int to) : from(from), to(to), val(T()) {{}}
+	Edge(int from, int to, T val) : from(from), to(to), val(val) {{}}
+	bool operator==(const Edge &e) const {{ return from == e.from && to == e.to && val == e.val; }}
+	bool operator!=(const Edge &e) const {{ return from != e.from || to != e.to || val != e.val; }}
+	bool operator<(const Edge &e) const {{ return val < e.val; }}
+	bool operator>(const Edge &e) const {{ return val > e.val; }}
+	bool operator<=(const Edge &e) const {{ return val <= e.val; }}
+	bool operator>=(const Edge &e) const {{ return val >= e.val; }}
+
+	operator int() const {{ return to; }}
+
+	friend ostream& operator << (ostream& os, const Edge& e) {{
+		os << e.from << " -> " << e.to << " : " << e.val;
+		return os;
+	}}
+}};
+template <class T> using Graph = vector<vector<Edge<T>>>;
+]],
+	{}
+))
+table.insert(snip, graph)
 
 
 
@@ -1029,6 +1052,140 @@ vector<Edge<T>> detect_cycle(const Graph<T> &G, const bool directional = true, c
 ))
 table.insert(snip, cycle_detection)
 
+local scc = s("scc", fmt([[
+/**
+ * @brief 強連結成分分解(Strongly Connected Components)
+ */
+struct SCC
+{{
+  private:
+    // 元の頂点数
+    int n;
+    // G: 元のグラフ, rG: 逆辺を張ったグラフ
+    vector<vector<int>> G, rG;
+
+    // order: トポロジカルソート
+    vector<int> order;
+
+	// component: 各頂点が属する強連結成分の番号
+    vector<int> component;
+	// component_size: 強連結成分のサイズ
+    vector<long long> components_size;
+	// component_count: 強連結成分の数
+	int component_count = 0;
+
+	vector<vector<int>> rebuildedG;
+
+	// 1度目のDFSでトポロジカルソートを行う O(|V|+|E|)
+    void topological_sort() {{
+        vector<bool> used(n, false);
+        auto dfs = [&used, this](auto dfs, int v) -> void {{
+            used[v] = 1;
+            for (auto nv : G[v]) {{
+                if (!used[nv]) dfs(dfs, nv);
+            }}
+            order.push_back(v);
+        }};
+
+        for (int v = 0; v < n; ++v) {{
+            if (!used[v]) dfs(dfs, v);
+        }}
+
+        reverse(order.begin(), order.end());
+    }}
+	// 2度目のDFSで逆辺のグラフでトポロジカル順に強連結成分を探す O(|V|+|E|)
+    void search_components() {{
+        auto dfs = [this](auto dfs, int v, int k) -> void {{
+            component[v] = k;
+            components_size[k]++;
+            for (auto nv : rG[v]) {{
+                if (component[nv] == -1) dfs(dfs, nv, k);
+            }}
+        }};
+
+		for (auto v : order) {{
+			if (component[v] == -1) {{
+				components_size.push_back(0);
+				dfs(dfs, v, component_count++);
+			}}
+		}}
+    }}
+	/**
+	* @brief 強連結成分を1つのノードとして扱うグラフを再構築する O(|V|+|E|)
+	*/
+    void rebuild() {{
+		rebuildedG.resize(component_count);
+
+        set<pair<int, int>> connected;
+        for (int v = 0; v < n; v++) {{
+            for (auto nv : G[v]) {{
+				int v_comp = component[v];
+				int nv_comp = component[nv];
+				pair<int, int> p = {{v_comp, nv_comp}};
+                if (!is_same(v, nv) &&
+                    !connected.count(p)) {{
+                    rebuildedG[v_comp].push_back(nv_comp);
+					connected.insert(p);
+                }}
+            }}
+        }}
+    }}
+
+  public:
+	/**
+	 * @brief 強連結成分分解を行う O(3 * |V|+|E|)
+	 */
+    SCC(vector<vector<int>> &_G)
+        : n(_G.size()), G(_G), rG(vector<vector<int>>(n)), component(vector<int>(n, -1)) {{
+        // 逆辺を張ったグラフを作成
+        for (int v = 0; v < n; v++) {{
+            for (auto nv : G[v])
+                rG[nv].push_back(v);
+        }}
+
+        topological_sort();
+		search_components();
+		rebuild();
+    }}
+
+	size_t size() const {{ return component_count; }}
+	/**
+	 * @brief 強連結成分の番号を取得する
+	 * @param v 頂点の番号
+	 */
+	int get_component(int v) const {{
+		assert(0 <= v && v < n);
+		return component[v];
+	}}
+	/**
+	 * @brief 強連結成分のサイズを取得する
+	 * @param component 強連結成分の番号
+	 */
+	long long get_component_size(int component) const {{
+		assert(0 <= component && component < size());
+		return components_size[component];
+	}}
+
+	/**
+	 * @brief 強連結成分のグラフを取得する
+	 * @remark トポロジカル順に並んでいる
+	 * @param component 強連結成分の番号
+	 */
+	vector<int>& operator[](int component) {{
+		assert(0 <= component && component < size());
+		return rebuildedG[component];
+	}}
+
+	/**
+	* @brief 2頂点が同じ強連結成分に属するかを判定する
+	*/
+    bool is_same(int u, int v) {{ return component[u] == component[v]; }}
+}};
+]],
+	{}
+))
+table.insert(snip, scc)
+
 
 
 local modint = s("modint", fmt([[
@@ -1172,20 +1329,28 @@ local segtree = s("segtree", fmt([[
 template <typename T> class segtree
 {{
   public:
-    static segtree<T> RangeMinimumQuery(int len) {{
-        return segtree<T>(len, numeric_limits<T>::max(),
-                          [](T a, T b) {{ return min(a, b); }});
+    static segtree<T> RangeMinimumQuery(int len, T e) {{
+        return segtree<T>(len, e, [](T a, T b) {{ return min(a, b); }});
     }}
 
-    static segtree<T> RangeMaximumQuery(int len) {{
-        return segtree<T>(len, numeric_limits<T>::lowest(),
-                          [](T a, T b) {{ return max(a, b); }});
+    static segtree<T> RangeMaximumQuery(int len, T e) {{
+        return segtree<T>(len, e, [](T a, T b) {{ return max(a, b); }});
     }}
 
-    static segtree<T> RangeSumQuery(int len) {{
-        return segtree<T>(len, T(0), [](T a, T b) {{ return a + b; }});
+    static segtree<T> RangeSumQuery(int len, T e) {{
+        return segtree<T>(len, e, [](T a, T b) {{ return a + b; }});
     }}
-	int length;               // 葉の数
+
+	static segtree<T> RangeMultiplyQuery(int len, T e) {{
+		return segtree<T>(len, e, [](T a, T b) {{ return a * b; }});
+	}}
+	
+	static segtree<T> RangeXorQuery(int len, T e) {{
+		return segtree<T>(len, e, [](T a, T b) {{ return a ^ b; }});
+	}}
+
+	// 葉の数
+	int length;
 
     /**
      * @brief セグメント木のコンストラクタ
