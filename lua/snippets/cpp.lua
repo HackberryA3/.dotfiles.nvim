@@ -1075,26 +1075,26 @@ struct SCC
 {{
   private:
     // 元の頂点数
-    int n;
+    long long n;
     // G: 元のグラフ, rG: 逆辺を張ったグラフ
-    vector<vector<int>> G, rG;
+    vector<vector<long long>> G, rG;
 
     // order: トポロジカルソート
-    vector<int> order;
+    vector<long long> order;
 
 	// component: 各頂点が属する強連結成分の番号
-    vector<int> component;
+    vector<long long> component;
 	// component_size: 強連結成分のサイズ
     vector<long long> components_size;
 	// component_count: 強連結成分の数
-	int component_count = 0;
+	long long component_count = 0;
 
-	vector<vector<int>> rebuildedG;
+	vector<vector<long long>> rebuildedG;
 
 	// 1度目のDFSでトポロジカルソートを行う O(|V|+|E|)
     void topological_sort() {{
         vector<bool> used(n, false);
-        auto dfs = [&used, this](auto dfs, int v) -> void {{
+        auto dfs = [&used, this](auto dfs, long long v) -> void {{
             used[v] = 1;
             for (auto nv : G[v]) {{
                 if (!used[nv]) dfs(dfs, nv);
@@ -1102,7 +1102,7 @@ struct SCC
             order.push_back(v);
         }};
 
-        for (int v = 0; v < n; ++v) {{
+        for (long long v = 0; v < n; ++v) {{
             if (!used[v]) dfs(dfs, v);
         }}
 
@@ -1110,7 +1110,7 @@ struct SCC
     }}
 	// 2度目のDFSで逆辺のグラフでトポロジカル順に強連結成分を探す O(|V|+|E|)
     void search_components() {{
-        auto dfs = [this](auto dfs, int v, int k) -> void {{
+        auto dfs = [this](auto dfs, long long v, long long k) -> void {{
             component[v] = k;
             components_size[k]++;
             for (auto nv : rG[v]) {{
@@ -1131,12 +1131,12 @@ struct SCC
     void rebuild() {{
 		rebuildedG.resize(component_count);
 
-        set<pair<int, int>> connected;
-        for (int v = 0; v < n; v++) {{
+        set<pair<long long, long long>> connected;
+        for (long long v = 0; v < n; v++) {{
             for (auto nv : G[v]) {{
-				int v_comp = component[v];
-				int nv_comp = component[nv];
-				pair<int, int> p = {{v_comp, nv_comp}};
+				long long v_comp = component[v];
+				long long nv_comp = component[nv];
+				pair<long long, long long> p = {{v_comp, nv_comp}};
                 if (!is_same(v, nv) &&
                     !connected.count(p)) {{
                     rebuildedG[v_comp].push_back(nv_comp);
@@ -1150,10 +1150,9 @@ struct SCC
 	/**
 	 * @brief 強連結成分分解を行う O(3 * |V|+|E|)
 	 */
-    SCC(vector<vector<int>> &_G)
-        : n(_G.size()), G(_G), rG(vector<vector<int>>(n)), component(vector<int>(n, -1)) {{
+    SCC(vector<vector<long long>> &_G) : n(_G.size()), G(_G), rG(vector<vector<long long>>(n)), component(vector<long long>(n, -1)) {{
         // 逆辺を張ったグラフを作成
-        for (int v = 0; v < n; v++) {{
+        for (long long v = 0; v < n; v++) {{
             for (auto nv : G[v])
                 rG[nv].push_back(v);
         }}
@@ -1163,14 +1162,12 @@ struct SCC
 		rebuild();
     }}
 
-	vector<vector<int>> get_rebuilded_graph() const {{ return rebuildedG; }}
-
 	size_t size() const {{ return component_count; }}
 	/**
 	 * @brief 強連結成分の番号を取得する
 	 * @param v 頂点の番号
 	 */
-	int get_component(int v) const {{
+	long long get_component(long long v) const {{
 		assert(0 <= v && v < n);
 		return component[v];
 	}}
@@ -1178,7 +1175,7 @@ struct SCC
 	 * @brief 強連結成分のサイズを取得する
 	 * @param component 強連結成分の番号
 	 */
-	long long get_component_size(int component) const {{
+	long long get_component_size(long long component) const {{
 		assert(0 <= component && component < size());
 		return components_size[component];
 	}}
@@ -1188,15 +1185,17 @@ struct SCC
 	 * @remark トポロジカル順に並んでいる
 	 * @param component 強連結成分の番号
 	 */
-	vector<int>& operator[](int component) {{
+	vector<long long>& operator[](long long component) {{
 		assert(0 <= component && component < size());
 		return rebuildedG[component];
 	}}
+	// 暗黙的なvector<vector<long long>>への変換
+	operator vector<vector<long long>>() const {{ return rebuildedG; }}
 
 	/**
 	* @brief 2頂点が同じ強連結成分に属するかを判定する
 	*/
-    bool is_same(int u, int v) {{ return component[u] == component[v]; }}
+    bool is_same(long long u, long long v) {{ return component[u] == component[v]; }}
 }};
 ]],
 	{}
@@ -1343,86 +1342,16 @@ table.insert(snip, modint)
 
 
 local segtree = s("segtree", fmt([[
-template <typename T> class segtree
+template <typename T>
+class segtree
 {{
-  public:
-    static segtree<T> RangeMinimumQuery(int len, T e) {{
-        return segtree<T>(len, e, [](T a, T b) {{ return min(a, b); }});
-    }}
+  protected:
+    const T E;                      // 単位元
+    vector<T> _data;                // 完全二分木配列
+    const function<T(T, T)> _query; // クエリ関数
+    int _length;                    // 葉の数
 
-    static segtree<T> RangeMaximumQuery(int len, T e) {{
-        return segtree<T>(len, e, [](T a, T b) {{ return max(a, b); }});
-    }}
-
-    static segtree<T> RangeSumQuery(int len, T e) {{
-        return segtree<T>(len, e, [](T a, T b) {{ return a + b; }});
-    }}
-
-	static segtree<T> RangeMultiplyQuery(int len, T e) {{
-		return segtree<T>(len, e, [](T a, T b) {{ return a * b; }});
-	}}
-	
-	static segtree<T> RangeXorQuery(int len, T e) {{
-		return segtree<T>(len, e, [](T a, T b) {{ return a ^ b; }});
-	}}
-
-	// 葉の数
-	int length;
-
-    /**
-     * @brief セグメント木のコンストラクタ
-     * @param len 配列の長さ
-     * @param e 単位元（評価するときの意味のない値。MinQueryの場合、min(x, INF)のINFは意味がない）
-     * @param query クエリ関数
-     */
-    segtree(int len, T e, function<T(T, T)> query)
-        : E(e), length(1), _query(std::move(query)) {{
-        // 要素数を2の冪乗にする
-        while (length < len) {{
-            length <<= 1;
-        }}
-        _data.assign(length * 2 - 1, E);
-    }}
-
-	/**
-	* @remark O(1) 評価しないので、build()を呼ぶこと O(N)
-	*/
-    T& operator[](size_t i) {{
-        if (i < 0 || i >= length) throw out_of_range("Index out of range");
-        return _data[i + length - 1];
-    }}
-
-    // 構築 O(N)
-    void build() {{
-        for (int i = length - 2; i >= 0; --i) {{
-            _data[i] = _query(_data[i * 2 + 1], _data[i * 2 + 2]);
-        }}
-    }}
-
-    // 値を更新 O(log N)
-    void update(int i, T value) {{
-        if (i < 0 || i >= length) throw out_of_range("Index out of range");
-        i += length - 1;
-        _data[i] = value;
-        while (i > 0) {{
-            i = (i - 1) >> 1;
-            _data[i] = _query(_data[i * 2 + 1], _data[i * 2 + 2]);
-        }}
-    }}
-
-    // 区間クエリ [a, b) O(log N)
-    T query(int a, int b) const {{
-		if (a < 0 || b < 0 || a >= length || b > length) throw out_of_range("Index out of range");
-		return _querySub(a, b, 0, 0, length);
-	}}
-
-  private:
-    const T E;                // 単位元
-    vector<T> _data;          // 完全二分木配列
-    function<T(T, T)> _query; // クエリ関数
-
-    // 区間クエリ内部処理
-    T _querySub(int a, int b, int k, int l, int r) const {{
+    T _query_sub(int a, int b, int k, int l, int r) const {{
         if (r <= a || b <= l) {{ // 完全に範囲外
             return E;
         }}
@@ -1430,10 +1359,89 @@ template <typename T> class segtree
             return _data[k];
         }}
         else {{ // 一部重なる
-            T vl = _querySub(a, b, k * 2 + 1, l, (l + r) / 2);
-            T vr = _querySub(a, b, k * 2 + 2, (l + r) / 2, r);
+            T vl = _query_sub(a, b, k * 2 + 1, l, (l + r) / 2);
+            T vr = _query_sub(a, b, k * 2 + 2, (l + r) / 2, r);
             return _query(vl, vr);
         }}
+    }}
+
+  public:
+    /**
+     * @brief セグメント木
+     * @param len 配列の長さ
+     * @param e 単位元（評価するときの意味のない値。MinQueryの場合、min(x,
+     * INF)のINFは意味がない）
+     * @param query クエリ関数
+     */
+    segtree(int len, T e, function<T(T, T)> query) : E(e), _length(1), _query(std::move(query)) {{
+        // 要素数を2の冪乗にする
+        while (_length < len) {{
+            _length <<= 1;
+        }}
+        _data.assign(_length * 2 - 1, E);
+    }}
+
+    size_t size() const {{ return _length; }}
+
+    /**
+     * @remark O(1) 評価しないので、build()を呼ぶこと O(N)
+     */
+    T &operator[](size_t i) {{
+        if (i < 0 || i >= _length) throw out_of_range("Index out of range");
+        return _data[i + _length - 1];
+    }}
+
+    /**
+     * @brief 構築 O(N)
+     */
+    void build() {{
+        for (int i = _length - 2; i >= 0; --i) {{
+            _data[i] = _query(_data[i * 2 + 1], _data[i * 2 + 2]);
+        }}
+    }}
+
+    /**
+     * @brief 更新 O(log N)
+     */
+    void update(int i, T value) {{
+        if (i < 0 || i >= _length) throw out_of_range("Index out of range");
+        i += _length - 1;
+        _data[i] = value;
+        while (i > 0) {{
+            i = (i - 1) >> 1;
+            _data[i] = _query(_data[i * 2 + 1], _data[i * 2 + 2]);
+        }}
+    }}
+
+    /**
+     * @brief 区間クエリ [a, b) O(log N)
+     */
+    T query(int a, int b) const {{
+        if (a < 0 || b < 0 || a >= _length || b > _length)
+            throw out_of_range("Index out of range");
+        return _query_sub(a, b, 0, 0, _length);
+    }}
+
+    static segtree<T> RangeMinimumQuery(int len,
+                                        T e = numeric_limits<T>::max()) {{
+        return segtree<T>(len, e, [](T a, T b) {{ return min(a, b); }});
+    }}
+
+    static segtree<T> RangeMaximumQuery(int len,
+                                        T e = numeric_limits<T>::min()) {{
+        return segtree<T>(len, e, [](T a, T b) {{ return max(a, b); }});
+    }}
+
+    static segtree<T> RangeSumQuery(int len, T e = 0) {{
+        return segtree<T>(len, e, [](T a, T b) {{ return a + b; }});
+    }}
+
+    static segtree<T> RangeProductQuery(int len, T e = 1) {{
+        return segtree<T>(len, e, [](T a, T b) {{ return a * b; }});
+    }}
+
+    static segtree<T> RangeXorQuery(int len, T e = 0) {{
+        return segtree<T>(len, e, [](T a, T b) {{ return a ^ b; }});
     }}
 }};
 ]],
@@ -1441,23 +1449,221 @@ template <typename T> class segtree
 ))
 table.insert(snip, segtree)
 
+local lazy_segtree = s("lazy_segtree", fmt([[
+template <typename T> 
+class lazy_segtree : public segtree<T>
+{{
+  private:
+    // lazyの単位元
+    const T ME;
+    vector<T> _lazy;
+
+    // lazyを子のlazyに伝播させる関数
+    const function<T(T, T)> _merge;
+    // lazyをdataに適用する関数
+    const function<T(T, T)> _apply;
+    // lazyをdataに適用する時に、区間の長さに応じて値を変える関数
+    const function<T(T, int)> _proportion;
+
+    void _eval(int k, int len) {{
+        if (_lazy[k] == ME) return;
+        if (k < this->_length - 1) {{
+            _lazy[k * 2 + 1] = _merge(_lazy[k * 2 + 1], _lazy[k]);
+            _lazy[k * 2 + 2] = _merge(_lazy[k * 2 + 2], _lazy[k]);
+        }}
+        this->_data[k] = _apply(this->_data[k], _proportion(_lazy[k], len));
+        _lazy[k] = ME;
+    }}
+
+    void _update_core(int a, int b, T x, int k, int l, int r) {{
+        _eval(k, r - l);
+        if (a <= l && r <= b) {{
+            _lazy[k] = _merge(_lazy[k], x);
+            _eval(k, r - l);
+        }}
+        else if (a < r && l < b) {{
+            _update_core(a, b, x, k * 2 + 1, l, (l + r) / 2);
+            _update_core(a, b, x, k * 2 + 2, (l + r) / 2, r);
+            this->_data[k] = this->_query(this->_data[k * 2 + 1], this->_data[k * 2 + 2]);
+        }}
+    }}
+
+    T _query_core(int a, int b, int k, int l, int r) {{
+        _eval(k, r - l);
+        if (r <= a || b <= l) {{ return this->E; }}
+        else if (a <= l && r <= b) {{ return this->_data[k]; }}
+        else {{
+            T vl = _query_core(a, b, k * 2 + 1, l, (l + r) / 2);
+            T vr = _query_core(a, b, k * 2 + 2, (l + r) / 2, r);
+            return this->_query(vl, vr);
+        }}
+    }}
+
+  public:
+    /**
+     * @brief 遅延セグメント木
+     * @param len 配列の長さ
+     * @param e 単位元
+     * @param queryFunc クエリ関数
+     * @param mergeFunc lazyを子のlazyに伝播させる関数
+     * @param applyFunc lazyをdataに適用する関数
+     * @param proportionFunc
+     * lazyをdataに適用する時に、区間の長さに応じて値を変える関数
+     * @param me lazyの単位元
+     */
+    lazy_segtree(int len, T e, function<T(T, T)> queryFunc, function<T(T, T)> mergeFunc, function<T(T, T)> applyFunc, function<T(T, int)> proportionFunc, T me)
+        : segtree<T>(len, e, queryFunc), _merge(mergeFunc), _apply(applyFunc), _proportion(proportionFunc), ME(me) {{
+        _lazy.assign(2 * this->_length - 1, ME);
+    }}
+
+	/**
+	 * @brief ランダムアクセス O(log N)
+	 */
+	T& operator[](size_t i) {{
+		if (i < 0 || i >= this->_length) throw out_of_range("Index out of range");
+		query(i, i + 1);
+		return this->_data[i + this->_length - 1];
+	}}
+
+	using segtree<T>::update;
+    /**
+     * @brief [a, b) 区間更新 O(log N)
+     */
+    void update(int a, int b, T x) {{
+        _update_core(a, b, x, 0, 0, this->_length);
+    }}
+
+    /**
+     * @brief 区間クエリ [a, b) O(log N)
+     */
+    T query(int a, int b) {{ return _query_core(a, b, 0, 0, this->_length); }}
+
+    static lazy_segtree<T> RangeUpdateMinimumQuery(int len, T e = numeric_limits<T>::max()) {{
+        return lazy_segtree<T>(
+            len,
+			e,
+			[](T a, T b) {{ return min(a, b); }},
+            [](T a, T b) {{ return b; }},
+			[](T a, T b) {{ return b; }},
+            [](T a, int b) {{ return a; }},
+			numeric_limits<T>::max());
+    }}
+    static lazy_segtree<T> RangeUpdateMaximumQuery(int len, T e = numeric_limits<T>::min()) {{
+        return lazy_segtree<T>(
+            len,
+			e,
+			[](T a, T b) {{ return max(a, b); }},
+            [](T a, T b) {{ return b; }},
+			[](T a, T b) {{ return b; }},
+            [](T a, int b) {{ return a; }},
+			numeric_limits<T>::min());
+    }}
+    static lazy_segtree<T> RangeUpdateSumQuery(int len, T e = 0) {{
+        return lazy_segtree<T>(
+            len,
+			e,
+			[](T a, T b) {{ return a + b; }},
+			[](T a, T b) {{ return b; }},
+            [](T a, T b) {{ return b; }},
+			[](T a, int b) {{ return a * b; }},
+			0);
+    }}
+
+    static lazy_segtree<T> RangeAddMinimumQuery(int len, T e = numeric_limits<T>::max()) {{
+        return lazy_segtree<T>(
+            len,
+			e,
+			[](T a, T b) {{ return min(a, b); }},
+            [](T a, T b) {{ return a + b; }},
+			[](T a, T b) {{ return a + b; }},
+            [](T a, int b) {{ return a; }},
+			0);
+    }}
+    static lazy_segtree<T> RangeAddMaximumQuery(int len, T e = numeric_limits<T>::min()) {{
+        return lazy_segtree<T>(
+            len,
+			e,
+			[](T a, T b) {{ return max(a, b); }},
+            [](T a, T b) {{ return a + b; }},
+			[](T a, T b) {{ return a + b; }},
+            [](T a, int b) {{ return a; }},
+			0);
+    }}
+    static lazy_segtree<T> RangeAddSumQuery(int len, T e = 0) {{
+        return lazy_segtree<T>(
+            len,
+			e,
+			[](T a, T b) {{ return a + b; }},
+            [](T a, T b) {{ return a + b; }},
+			[](T a, T b) {{ return a + b; }},
+            [](T a, int b) {{ return a * b; }},
+			0);
+    }}
+}};
+
+struct S
+{{
+    ll sum;
+    ll minimum;
+    ll maximum;
+
+    S() : sum(0), minimum(9009009009009009009LL), maximum(-9009009009009009009LL) {{}}
+    S(ll sum, ll minimum, ll maximum) : sum(sum), minimum(minimum), maximum(maximum) {{}}
+
+    static S query(S a, S b) {{
+        return S(a.sum + b.sum, min(a.minimum, b.minimum), max(a.maximum, b.maximum));
+    }}
+    static S update_merge(S a, S b) {{ return S(b.sum, b.minimum, b.maximum); }}
+    static S add_merge(S a, S b) {{
+        return S(a.sum + b.sum, a.minimum + b.minimum, a.maximum + b.maximum);
+    }}
+    static S update_apply(S a, S b) {{ return S(b.sum, b.minimum, b.maximum); }}
+    static S add_apply(S a, S b) {{
+        return S(a.sum + b.sum, a.minimum + b.minimum, a.maximum + b.maximum);
+    }}
+    static S proportion(S a, int b) {{
+        return S(a.sum * b, a.minimum, a.maximum);
+    }}
+
+    static S update_identity() {{ return S(0, INF, -INF); }}
+    static S add_identity() {{ return S(0, 0, 0); }}
+
+    static lazy_segtree<S> RangeUpdateQuery(int len) {{
+        return lazy_segtree<S>(len, S(), S::query, S::update_merge, S::update_apply, S::proportion, S::update_identity());
+    }}
+
+    static lazy_segtree<S> RangeAddQuery(int len) {{
+        return lazy_segtree<S>(len, S(), S::query, S::add_merge, S::add_apply, S::proportion, S::add_identity());
+    }}
+
+	bool operator==(const S &rhs) const {{
+		return sum == rhs.sum && minimum == rhs.minimum && maximum == rhs.maximum;
+	}}
+}};
+]],
+	{}
+))
+table.insert(snip, lazy_segtree)
+
 
 
 local trie = s("trie", fmt([[
-template <int char_size, int base>
+template <class T, typename T_Hash = hash<T>>
 struct Trie {{
+private:
 	struct Node {{
-		vector<Node*> next;
+		unordered_map<T, Node*, T_Hash> next;
 		vector<int> accept;
-		int c;
+		T c;
 		int common;
-		Node(int c) : c(c), common(0) {{
-			next.assign(char_size, nullptr);
+		Node(T c) : c(c), common(0) {{
 		}}
 	}};
 
 	vector<Node*> nodes;
 	Node* root;
+
+public:
 	Trie() : root(new Node(-1)) {{
 		nodes.push_back(root);
 	}}
@@ -1467,12 +1673,12 @@ struct Trie {{
 	 * @param s 挿入する文字列
 	 * @param id 挿入する文字列のID(文字列の終端のノードにIDを保存しておく)
 	 */
-	void insert(const string& s, int id) {{
+	template <class Iterable>
+	void insert(const Iterable& s, int id) {{
 		Node* now = root;
 		now->common++;
-		for (size_t i = 0; i < s.size(); ++i) {{
-			int c = s[i] - base;
-			if (now->next[c] == nullptr) {{
+		for (const T& c : s) {{
+			if (!now->next.count(c)) {{
 				now->next[c] = new Node(c);
 				nodes.push_back(now->next[c]);
 			}}
@@ -1485,11 +1691,11 @@ struct Trie {{
 	/**
 	 * @brief 文字列sと完全一致する文字列がTrie木にいくつあるかを返す O(|s|)
 	 */
-	int count(const string& s) {{
+	template <class Iterable>
+	int count(const Iterable& s) {{
 		Node* now = root;
-		for (size_t i = 0; i < s.size(); ++i) {{
-			int c = s[i] - base;
-			if (now->next[c] == nullptr) return 0;
+		for (const T& c : s) {{
+			if (!now->next.count(c)) return 0;
 			now = now->next[c];
 		}}
 		return now->accept.size();
@@ -1498,11 +1704,11 @@ struct Trie {{
 	/**
 	 * @brief 文字列sで始まる文字列がTrie木にいくつあるかを返す O(|s|)
 	 */
-	int start_with(const string& s) {{
+	template <class Iterable>
+	int start_with(const Iterable& s) {{
 		Node* now = root;
-		for (size_t i = 0; i < s.size(); ++i) {{
-			int c = s[i] - base;
-			if (now->next[c] == nullptr) return 0;
+		for (const T& c : s) {{
+			if (!now->next.count(c)) return 0;
 			now = now->next[c];
 		}}
 		return now->common;
@@ -1511,25 +1717,28 @@ struct Trie {{
 	/**
 	 * @brief 文字列sと共通する最長の接頭辞を返す O(|s|)
 	 */
-	string common_prefix(const string& s) {{
+	template <class Iterable>
+	vector<T> common_prefix(const Iterable& s) {{
+		vector<T> res;
+
 		Node* now = root;
-		for (size_t i = 0; i < s.size(); ++i) {{
-			int c = s[i] - base;
-			if (now->next[c] == nullptr) return s.substr(0, i);
+		for (const T& c : s) {{
+			if (!now->next.count(c)) return res;
+			res.push_back(c);
 			now = now->next[c];
 		}}
-		return s;
+		return res;
 	}}
 
 	/**
 	 * @brief 文字列sと共通する接頭辞を持つ文字列の個数の最大値を返す O(|s|)
 	 */
-	int common_prefix_max(const string& s) {{
+	template <class Iterable>
+	int common_prefix_max(const Iterable& s) {{
 		Node* now = root;
 		int mx = 0;
-		for (size_t i = 0; i < s.size(); ++i) {{
-			int c = s[i] - base;
-			if (now->next[c] == nullptr) return mx;
+		for (const T& c : s) {{
+			if (!now->next.count(c)) return mx;
 			now = now->next[c];
 			mx = max(mx, now->common);
 		}}
@@ -1539,12 +1748,12 @@ struct Trie {{
 	/**
 	 * @brief 文字列sと共通する接頭辞の合計の長さを返す O(|s|)
 	 */
-	int common_prefix_sum(const string& s) {{
+	template <class Iterable>
+	int common_prefix_sum(const Iterable& s) {{
 		Node* now = root;
 		int sum = 0;
-		for (size_t i = 0; i < s.size(); ++i) {{
-			int c = s[i] - base;
-			if (now->next[c] == nullptr) return sum;
+		for (const T& c : s) {{
+			if (!now->next.count(c)) return sum;
 			now = now->next[c];
 			sum += now->common;
 		}}
