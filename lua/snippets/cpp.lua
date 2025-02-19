@@ -1214,6 +1214,7 @@ struct mint
   public:
     static long long default_mod;
 
+	mint() : n(0), mod(default_mod == 0 ? 998244353 : default_mod) {{}}
     mint(const mint &m) {{
         n = m.n;
         mod = m.mod;
@@ -1261,6 +1262,12 @@ struct mint
         }}
         return (inverse ? mint(res, mod).inv() : mint(res, mod));
     }}
+
+	mint &operator=(const mint &o) {{
+		n = o.n;
+		mod = o.mod;
+		return *this;
+	}}
 
 	mint operator+() const {{ return *this; }}
 	mint operator-() const {{ return 0 - *this; }}
@@ -1373,7 +1380,7 @@ class segtree
      * INF)のINFは意味がない）
      * @param query クエリ関数
      */
-    segtree(int len, T e, function<T(T, T)> query) : E(e), _length(1), _query(std::move(query)) {{
+    segtree(int len, T e, function<T(T, T)> query) : E(e), _query(std::move(query)), _length(1) {{
         // 要素数を2の冪乗にする
         while (_length < len) {{
             _length <<= 1;
@@ -1454,8 +1461,6 @@ template <typename T>
 class lazy_segtree : public segtree<T>
 {{
   private:
-    // lazyの単位元
-    const T ME;
     vector<T> _lazy;
 
     // lazyを子のlazyに伝播させる関数
@@ -1464,6 +1469,8 @@ class lazy_segtree : public segtree<T>
     const function<T(T, T)> _apply;
     // lazyをdataに適用する時に、区間の長さに応じて値を変える関数
     const function<T(T, int)> _proportion;
+    // lazyの単位元
+    const T ME;
 
     void _eval(int k, int len) {{
         if (_lazy[k] == ME) return;
