@@ -1088,6 +1088,8 @@ struct SCC
     vector<long long> components_size;
 	// component_count: 強連結成分の数
 	long long component_count = 0;
+	// component_elements: 各強連結成分に属する頂点のリスト
+	vector<vector<long long>> component_elements;
 
 	vector<vector<long long>> rebuildedG;
 
@@ -1113,6 +1115,7 @@ struct SCC
         auto dfs = [this](auto dfs, long long v, long long k) -> void {{
             component[v] = k;
             components_size[k]++;
+			component_elements[k].push_back(v);
             for (auto nv : rG[v]) {{
                 if (component[nv] == -1) dfs(dfs, nv, k);
             }}
@@ -1121,6 +1124,7 @@ struct SCC
 		for (auto v : order) {{
 			if (component[v] == -1) {{
 				components_size.push_back(0);
+				component_elements.push_back(vector<long long>());
 				dfs(dfs, v, component_count++);
 			}}
 		}}
@@ -1178,6 +1182,14 @@ struct SCC
 	long long get_component_size(long long component) const {{
 		assert(0 <= component && component < size());
 		return components_size[component];
+	}}
+	/**
+	 * @brief 強連結成分に属する頂点のリストを取得する
+	 * @param component 強連結成分の番号
+	 */
+	vector<long long> get_component_elements(long long component) const {{
+		assert(0 <= component && component < size());
+		return component_elements[component];
 	}}
 
 	/**
@@ -1660,19 +1672,18 @@ struct Trie {{
 private:
 	struct Node {{
 		unordered_map<T, Node*, T_Hash> next;
-		vector<int> accept;
+		unordered_set<int> accept;
 		T c;
 		int common;
 		Node(T c) : c(c), common(0) {{
 		}}
 	}};
 
-	vector<Node*> nodes;
 	Node* root;
+	int n;
 
 public:
-	Trie() : root(new Node(-1)) {{
-		nodes.push_back(root);
+	Trie() : root(new Node(-1)), n(0) {{
 	}}
 
 	/**
@@ -1687,12 +1698,30 @@ public:
 		for (const T& c : s) {{
 			if (!now->next.count(c)) {{
 				now->next[c] = new Node(c);
-				nodes.push_back(now->next[c]);
 			}}
 			now = now->next[c];
 			now->common++;
 		}}
-		now->accept.push_back(id);
+		now->accept.insert(id);
+		n++;
+	}}
+	/**
+	 * @brief 文字列sをTrie木から削除する O(|s|)
+	 * @param s 削除する文字列
+	 */
+	template <class Iterable>
+	void erase(const Iterable& s) {{
+		int count = this->count(s);
+
+		Node* now = root;
+		now->common -= count;
+		for (const T& c : s) {{
+			if (!now->next.count(c)) return;
+			now = now->next[c];
+			now->common -= count;
+		}}
+		now->accept.clear();
+		n -= count;
 	}}
 
 	/**
@@ -1707,6 +1736,37 @@ public:
 		}}
 		return now->accept.size();
 	}}
+	Node get_root() const {{
+		return *root;
+	}}
+	size_t size() const {{
+		return n;
+	}}
+
+	/**
+	 * @brief 文字列s分ノードを辿る O(|s|)
+	 */
+	template <class Iterable>
+	Node get(const Iterable& s) {{
+		Node* now = root;
+		for (const T& c : s) {{
+			if (!now->next.count(c)) throw runtime_error("The char " + c + " of " + s + " is not found");
+			now = now->next[c];
+		}}
+		return *now;
+	}}
+	/**
+	 * @brief 文字列s分、startからノードを辿る O(|s|)
+	 */
+	template <class Iterable>
+	Node get(const Iterable& s, Node start) {{
+		Node* now = start;
+		for (const T& c : s) {{
+			if (!now->next.count(c)) throw runtime_error("The char " + c + " of " + s + " is not found");
+			now = now->next[c];
+		}}
+		return *now;
+	}}
 
 	/**
 	 * @brief 文字列sで始まる文字列がTrie木にいくつあるかを返す O(|s|)
@@ -1719,6 +1779,42 @@ public:
 			now = now->next[c];
 		}}
 		return now->common;
+	}}
+
+	/**
+	 * @brief 文字列sで始まる文字列を削除 最悪O(全ての文字列の長さの総和)
+	 */
+	template <class Iterable>
+	void erase_start_with(const Iterable& s) {{
+		vector<Node*> history;
+
+		Node* now = root;
+		history.push_back(now);
+		for (const T& c : s) {{
+			if (!now->next.count(c)) return;
+			now = now->next[c];
+			history.push_back(now);
+		}}
+
+		int deletedCnt = 0;
+		auto dfs = [&](auto self, Node* now) -> void {{
+			n -= now->accept.size();
+			deletedCnt += now->accept.size();
+
+			now->common = 0;
+			now->accept.clear();
+
+			for (auto& [c, next] : now->next) {{
+				self(self, next);
+			}}
+		}};
+		dfs(dfs, now);
+
+		while (history.size() > 0) {{
+			Node* now = history.back();
+			now->common -= deletedCnt;
+			history.pop_back();
+		}}
 	}}
 
 	/**
@@ -1765,6 +1861,21 @@ public:
 			sum += now->common;
 		}}
 		return sum;
+	}}
+
+	/**
+	* @brief 文字列sの接頭辞がTrie木にいくつあるかを返す O(|s|)
+	*/
+	template <class Iterable>
+	int prefix_count(const Iterable& s) {{
+		Node* now = root;
+		int cnt = 0;
+		for (const T& c : s) {{
+			if (!now->next.count(c)) return cnt;
+			now = now->next[c];
+			cnt += now->accept.size();
+		}}
+		return cnt;
 	}}
 }};
 ]],
