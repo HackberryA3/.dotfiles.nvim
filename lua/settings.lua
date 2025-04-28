@@ -11,7 +11,7 @@ opt.laststatus = 3 -- ステータスラインをグローバル化
 
 
 
-opt.updatetime = 200 --CursorHoldが発火されるまでの時間（カーソルを止めてからハイライトされるまでの時間）
+opt.updatetime = 0 --CursorHoldが発火されるまでの時間（カーソルを止めてからハイライトされるまでの時間）
 opt.cmdheight = 1
 opt.clipboard = 'unnamedplus' --クリップボードを共有
 -- NOTE: vim.cmd'set clipboard+=unnamedplus' 
