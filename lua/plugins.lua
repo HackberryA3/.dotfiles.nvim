@@ -99,7 +99,7 @@ require("lazy").setup({
 			event = "InsertEnter",
 			opts = require("configs.copilot")
 		},
-		{
+		--[[ {
 			"Exafunction/codeium.nvim",
 			dependencies = {
 				"nvim-lua/plenary.nvim",
@@ -109,7 +109,7 @@ require("lazy").setup({
 				require("codeium").setup({
 				})
 			end
-		},
+		}, ]]
 		-- ステータスラインに状態を表示
 		{ "AndreM222/copilot-lualine" },
 		{
@@ -429,10 +429,10 @@ require("lazy").setup({
 
 
 		-- その他 /////////////////////////////////////////////////////////////////////////////////////////////////////
-		{
+		--[[ {
 			"wakatime/vim-wakatime",
 			lazy = false
-		},
+		}, ]]
 		-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
