@@ -324,27 +324,26 @@ void calc_fact(ll size) {{
 }}
 unordered_map<ll, vector<ll>> modfact, modinvfact;
 void calc_fact(ll size, ll mod) {{
-    modfact[mod] = vector<ll>(size + 1, 0);
-    modinvfact[mod] = vector<ll>(size + 1, 0);
-    modfact[mod][0] = 1;
-    for (int i = 0; i < size; ++i)
+	if (modfact.count(mod) && modfact[mod].size() - 1 > size) return;
+
+	ll oldsize = max(0, (int)modfact[mod].size() - 1);
+	modfact[mod].resize(size + 1, 1);
+	modinvfact[mod].resize(size + 1, 1);
+
+    for (int i = oldsize; i < size; ++i)
         modfact[mod][i + 1] = modfact[mod][i] * (i + 1) % mod;
     modinvfact[mod][size] = inv(modfact[mod][size], mod);
-    for (int i = size - 1; i >= 0; --i)
+    for (int i = size - 1; i >= oldsize; --i)
         modinvfact[mod][i] = modinvfact[mod][i + 1] * (i + 1) % mod;
 }}
-ll nCr(ll n, ll r, ll mod) {{
+ll nCr(ll n, ll r, ll mod, ll dp_size = 500000LL) {{
     assert(n >= r);
     assert(n >= 0 && r >= 0);
-    if (modfact.count(mod) == 0 || modfact[mod].size() <= max(n, r)) {{
-        const ll size = max(500000LL, max(n, r));
-        calc_fact(size, mod);
-    }}
-    return modfact[mod][n] * modinvfact[mod][r] % mod * modinvfact[mod][n - r] %
-           mod;
+	calc_fact(max(n, dp_size), mod);
+    return modfact[mod][n] * modinvfact[mod][r] % mod * modinvfact[mod][n - r] % mod;
 }}
-ll nHr(ll n, ll r, ll mod) {{
-    return nCr(n + r - 1, r, mod);
+ll nHr(ll n, ll r, ll mod, ll dp_size = 500000LL) {{
+    return nCr(n + r - 1, r, mod, dp_size);
 }}
 ]],
 	{}
@@ -1244,8 +1243,7 @@ struct mint
 
     mint inv() const {{
         assert(gcd(n, mod) == 1);
-        auto ext_gcd = [&](auto f, long long a, long long b, long long &x,
-                           long long &y) -> long long {{
+        auto ext_gcd = [&](auto f, long long a, long long b, long long &x, long long &y) -> long long {{
             if (b == 0) {{
                 x = 1;
                 y = 0;
@@ -1441,13 +1439,11 @@ class segtree
         return _query_sub(a, b, 0, 0, _length);
     }}
 
-    static segtree<T> RangeMinimumQuery(int len,
-                                        T e = numeric_limits<T>::max()) {{
+    static segtree<T> RangeMinimumQuery(int len, T e = numeric_limits<T>::max()) {{
         return segtree<T>(len, e, [](T a, T b) {{ return min(a, b); }});
     }}
 
-    static segtree<T> RangeMaximumQuery(int len,
-                                        T e = numeric_limits<T>::min()) {{
+    static segtree<T> RangeMaximumQuery(int len, T e = numeric_limits<T>::min()) {{
         return segtree<T>(len, e, [](T a, T b) {{ return max(a, b); }});
     }}
 
