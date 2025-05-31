@@ -352,6 +352,82 @@ table.insert(snip, combinatorics)
 
 
 
+local offset_vector = s("offset_vector", fmt([[
+template <typename T>
+struct offset_vector {{
+	vector<T> data;
+	const int offset;
+
+	/** @brief 負のインデックスをサポートするベクトル
+	 * @param n 正のインデックスのサイズ
+	 * @param offset 負のインデックスに拡張する数
+	 * @param init_val 初期値（デフォルトはT()）
+	 */
+	offset_vector(int n, int offset = 0, T init_val = T()) : offset(offset) {{
+		assert(0 <= n && "offset_vectorの初期化時のnは0以上でなければなりません");
+		assert(0 <= offset && "offset_vectorの初期化時のoffsetは0以上でなければなりません");
+		data.resize(n + offset, init_val);
+	}}
+
+	T& operator[](int i) {{
+		assert(0 <= i + offset && "offset_vectorへの負方向の範囲外参照です");
+		assert(i + offset < data.size() && "offset_vectorへの正方向の範囲外参照です");
+		return data[i + offset];
+	}}
+
+	auto begin() {{
+		return data.begin();
+	}}
+	auto end() {{
+		return data.end();
+	}}
+	auto rbegin() {{
+		return data.rbegin();
+	}}
+	auto rend() {{
+		return data.rend();
+	}}
+	auto size() const {{
+		return data.size();
+	}}
+	size_t positive_size() const {{
+		return data.size() - offset;
+	}}
+	auto empty() const {{
+		return data.empty();
+	}}
+	auto front() {{
+		assert(!data.empty() && "offset_vectorが空です");
+		return data.front();
+	}}
+	auto back() {{
+		assert(!data.empty() && "offset_vectorが空です");
+		return data.back();
+	}}
+
+	void push_back(const T& value) {{
+		data.push_back(value);
+	}}
+	void pop_back() {{
+		assert(offset < data.size() && "offset_vectorのpop_backは、負の要素に対しては使用できません");
+		assert(!data.empty() && "offset_vectorのpop_backは、空のベクトルに対しては使用できません");
+		data.pop_back();
+	}}
+
+	friend ostream& operator<<(ostream& os, const offset_vector<T>& v) {{
+		for (size_t i = 0; i < v.size(); ++i) {{
+			if (i != 0) os << " ";
+			os << v.data[i];
+		}}
+		os << "\n";
+		return os;
+	}}
+}};
+]],
+	{}
+))
+table.insert(snip, offset_vector)
+
 local linked_list = s("linked_list", fmt([[
 template <class T, typename Hash = hash<T>> class LinkedList
 {{
