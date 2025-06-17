@@ -23,7 +23,7 @@ using P = pair<int, int>;
 using PP = pair<int, P>;
 using PLL = pair<ll, ll>;
 using PPLL = pair<ll, PLL>;
-#define rep(i, n) for(ll i = 0; i < n; ++i)
+#define rep(i, n) for(ll i = 0; i < (ll)n; ++i)
 #define rrep(i, n) for(ll i = n - 1; i >= 0; --i)
 #define loop(i, a, b) for(ll i = a; i <= b; ++i)
 #define all(v) v.begin(), v.end()
@@ -1954,6 +1954,48 @@ public:
 	{}
 ))
 table.insert(snip, trie)
+
+
+
+local rolling_hash = s("rolling_hash", fmt([[
+template <typename T>
+struct RollingHash {{
+private:
+	vector<unsigned long long> pow_base;
+	vector<unsigned long long> hash;
+public:
+	unsigned long long base;
+	static const unsigned long long mod = 2147483647;
+
+	static unsigned long long generate_base() {{
+		mt19937 rnd(chrono::steady_clock::now().time_since_epoch().count());
+		return uniform_int_distribution<unsigned long long>(1, mod - 1)(rnd);
+	}}
+
+	/**
+	* @brief Iterable<T>のローリングハッシュを計算する O(n)
+	* @param s 文字列やvectorなどの添字アクセス可能なオブジェクト
+	* @param base ハッシュの基数。デフォルトはランダムに生成される
+	*/
+	template <typename Iterable>
+	RollingHash(Iterable s, unsigned long long base = generate_base()): pow_base(s.size() + 1, 1), hash(s.size() + 1, 0) {{
+		for (int i = 0; i < s.size(); ++i){{
+			hash[i + 1] = ((hash[i] * base) % mod + (unsigned long long)s[i]) % mod;
+			pow_base[i + 1] = (pow_base[i] * base) % mod;
+		}}
+	}}
+
+	/**
+	* @brief [l, r) の連続部分列のハッシュ値を返す O(1)
+	*/
+	unsigned long long get(int l, int r) {{
+		return (hash[r] - (hash[l] * pow_base[r - l]) % mod + mod) % mod;
+	}}
+}};
+]],
+	{}
+))
+table.insert(snip, rolling_hash)
 
 
 
