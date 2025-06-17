@@ -1961,10 +1961,13 @@ local rolling_hash = s("rolling_hash", fmt([[
 template <typename T>
 struct RollingHash {{
 private:
-	vector<unsigned long long> pow_base;
-	vector<unsigned long long> hash;
+	vector<unsigned long long> pow_bases;
+	vector<unsigned long long> hashes;
+	vector<unsigned long long> pow_bases2;
+	vector<unsigned long long> hashes2;
 public:
 	unsigned long long base;
+	unsigned long long base2;
 	static const unsigned long long mod = 2147483647;
 
 	static unsigned long long generate_base() {{
@@ -1976,20 +1979,34 @@ public:
 	* @brief Iterable<T>のローリングハッシュを計算する O(n)
 	* @param s 文字列やvectorなどの添字アクセス可能なオブジェクト
 	* @param base ハッシュの基数。デフォルトはランダムに生成される
+	* @param base2 2つ目のハッシュの基数。デフォルトは-1で、使用しない
 	*/
 	template <typename Iterable>
-	RollingHash(Iterable s, unsigned long long base = generate_base()): pow_base(s.size() + 1, 1), hash(s.size() + 1, 0) {{
+	RollingHash(Iterable s, unsigned long long base = generate_base(), unsigned long long base2 = -1): pow_bases(s.size() + 1, 1), hashes(s.size() + 1, 0), base(base), base2(base2) {{
+		if (base2 != -1) {{
+			pow_bases2.resize(s.size() + 1, 1);
+			hashes2.resize(s.size() + 1, 0);
+		}}
 		for (int i = 0; i < s.size(); ++i){{
-			hash[i + 1] = ((hash[i] * base) % mod + (unsigned long long)s[i]) % mod;
-			pow_base[i + 1] = (pow_base[i] * base) % mod;
+			hashes[i + 1] = ((hashes[i] * base) % mod + (unsigned long long)s[i]) % mod;
+			pow_bases[i + 1] = (pow_bases[i] * base) % mod;
+			if (base2 != -1) {{
+				hashes2[i + 1] = ((hashes2[i] * base2) % mod + (unsigned long long)s[i]) % mod;
+				pow_bases2[i + 1] = (pow_bases2[i] * base2) % mod;
+			}}
 		}}
 	}}
 
 	/**
 	* @brief [l, r) の連続部分列のハッシュ値を返す O(1)
 	*/
-	unsigned long long get(int l, int r) {{
-		return (hash[r] - (hash[l] * pow_base[r - l]) % mod + mod) % mod;
+	long long get(int l, int r) {{
+		unsigned long long hash1 = (hashes[r] - (hashes[l] * pow_bases[r - l]) % mod + mod) % mod;
+		unsigned long long hash2 = 0;
+		if (base2 != -1) {{
+			hash2 = (hashes2[r] - (hashes2[l] * pow_bases2[r - l]) % mod + mod) % mod;
+		}}
+		return (hash1 << 32) | hash2;
 	}}
 }};
 ]],
