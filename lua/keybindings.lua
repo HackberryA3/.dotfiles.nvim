@@ -81,8 +81,8 @@ return {
 		keyset("n", "K", "<CMD>Lspsaga hover_doc<CR>")
 		keyset("n", "<F2>", "<CMD>Lspsaga rename<CR>")
 		keyset("n", "<C-k><C-k>", "<CMD>Lspsaga code_action<CR>", noremap("コードアクション"))
-		keyset("n", "[g", vim.diagnostic.goto_prev, noremap("前のエラーに移動"))
-		keyset("n", "]g", vim.diagnostic.goto_next, noremap("次のエラーに移動"))
+		keyset("n", "[g", function() vim.diagnostic.jump({count=-1, float=true}) end, noremap("前のエラーに移動"))
+		keyset("n", "]g", function() vim.diagnostic.jump({count=1, float=true}) end, noremap("次のエラーに移動"))
 		keyset("n", "<C-k><C-e>", function() vim.lsp.buf.format({ async = true }) end, noremap("フォーマット"))
 		-- /////////////////////////////////////////////////////////////////////////////////////////////
 
