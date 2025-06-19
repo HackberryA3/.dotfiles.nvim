@@ -1015,6 +1015,37 @@ table.insert(snip, topological_sort)
 
 
 
+local euler_tour = s("euler_tour", fmt([[
+/**
+* @brief オイラーツアー O(V+E)
+* @remark 木であること
+* @remark 無向グラフ、または根から全ての頂点を回ること
+*/
+pair<vector<long long>, vector<long long>> euler_tour(const vector<vector<long long>> g, const int root = 0) {{
+	vector<long long> start(n, 0); // 新たな頂点番号&区間の始まり
+	vector<long long> end(n, 0); // 自分以下の部分木の終わり(半開区間)
+	auto dfs = [&](auto self, int v, int p, int idx) -> int {{
+		start[v] = idx;
+
+		int last = idx;
+		for (ll to : g[v]) {{
+			if (to == p) continue;
+			last = self(self, to, v, last + 1);
+		}}
+		end[v] = last + 1;
+		return last;
+	}};
+	dfs(dfs, root, -1, 0);
+	
+	return {{start, end}};
+}}
+]],
+	{}
+))
+table.insert(snip, euler_tour)
+
+
+
 local union_find = s("union_find", fmt([[
 class UnionFind
 {{
