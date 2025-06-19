@@ -2016,5 +2016,31 @@ table.insert(snip, rolling_hash)
 
 
 
+local manacher = s("manacher", fmt([[
+/**
+* @brief Manacher O(|s|)
+* @return i番目の文字を中心とした回文の長さを格納した配列
+*/
+vector<long long> manacher(const string s) {{
+	vector<long long> res(s.size(), 0);
+
+	int i = 0, j = 0;
+	while (i < s.size()) {{
+	  while (0 <= i-j && i+j < s.size() && s[i-j] == s[i+j]) ++j;
+	  res[i] = j;
+	  int k = 1;
+	  while (0 <= i-k && k+res[i-k] < j) res[i+k] = res[i-k], ++k;
+	  i += k; j -= k;
+	}}
+	
+	return res;
+}}
+]],
+	{}
+))
+table.insert(snip, manacher)
+
+
+
 
 return snip
