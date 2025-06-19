@@ -1,0 +1,3 @@
+return {
+	"ryleelyman/latex.nvim",
+}

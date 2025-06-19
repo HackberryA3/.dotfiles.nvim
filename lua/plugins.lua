@@ -13,456 +13,94 @@ end
 vim.opt.rtp:prepend(lazypath)
 -- ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-vim.g.mapleader = " " -- Lazyよりも前に設定する
+vim.g.mapleader = " " -- NOTE: Lazyよりも前に設定する
 vim.g.maplocalleader = "\\"
 
-require("lazy").setup({
-		-- ヘルプを日本語にする
-		"vim-jp/vimdoc-ja",
+local plugins = {
+	{ conf = "ide.treesitter", enable = true }, -- シンタックスハイライト
+	{ conf = "ide.mason", enable = true }, -- LSP, DAPマネージャー
+	{ conf = "ide.lspconfig", enable = true }, -- LSPとneovimを繋げる
+	{ conf = "ide.mason-lspconfig", enable = true }, -- lspconfigとmasonを繋げる
+	{ conf = "ide.lspsaga", enable = true }, -- lspのUIをかっこよくする
 
+	{ conf = "ide.cmp", enable = true }, -- 補完
+	{ conf = "ide.lsp_signature", enable = true }, -- 関数の引数ヒント
 
+	{ conf = "ide.luasnip", enable = true }, -- スニペット
 
-		-- IDE ///////////////////////////////////////////////////////////////////////////////////////////////////////
-		-- シンタックスハイライト
-		{
-			"nvim-treesitter/nvim-treesitter",
-			main = "nvim-treesitter.configs",
-			opts = require("configs.treesitter")
-		},
-		-- LSPマネージャー
-		{
-			"williamboman/mason.nvim",
-			config = true,
-			opts = {
-				ui = {
-					border = "rounded"
-				}
-			}
-		},
-		-- LSPとneovimを繋げる
-		{
-			"neovim/nvim-lspconfig"
-		},
-		-- lspconfigとmasonを繋げる
-		{
-			"williamboman/mason-lspconfig.nvim",
-			config = function() require("configs.lspconfig") end,
-			dependencies = {
-				"williamboman/mason.nvim",
-				"neovim/nvim-lspconfig",
-				"ray-x/lsp_signature.nvim"
-			}
-		},
-		-- lspのUIをかっこよくする
-		{
-			"nvimdev/lspsaga.nvim",
-			opts = require("configs.lspsaga"),
-			dependencies = {
-				'nvim-treesitter/nvim-treesitter',
-				'nvim-tree/nvim-web-devicons'
-			}
-		},
+	{ conf = "ide.copilot", enable = true }, -- copilot
+	{ conf = "ide.copilot-lualine", enable = true }, -- ステータスラインにcopilotの状態を表示
+	{ conf = "ide.codeium", enable = false }, -- codeium
+	{ conf = "ide.avante", enable = true }, -- AI統合
 
+	{ conf = "ide.dap", enable = true }, -- DAP
+	{ conf = "ide.dap-ui", enable = true }, -- DAP UI
+	{ conf = "ide.dap-virtual-text", enable = true }, -- デバッグ時の変数の値や、例外の情報を表示する
+	{ conf = "ide.mason-dap", enable = true }, -- DAPとMasonをつなげる
+	{ conf = "ide.code_runner", enable = true }, -- クイックラン
 
+	{ conf = "ui.nvim-tree", enable = true }, -- ファイラー
+	{ conf = "ui.nvim-tree-preview", enable = true }, -- ファイラーのプレビュー
 
-		-- 補完
-		{
-			"hrsh7th/nvim-cmp",
-			config = function() require("configs.cmp") end,
-			dependencies = {
-				"hrsh7th/cmp-nvim-lsp",
-				"hrsh7th/cmp-buffer",
-				"hrsh7th/cmp-path",
-				"hrsh7th/cmp-cmdline",
-				"hrsh7th/cmp-calc",
-				"saadparwaiz1/cmp_luasnip"
-			}
-		},
-		-- 関数の引数ヒント
-		{
-			"ray-x/lsp_signature.nvim",
-			opts = {
-				hint_prefix = "󰏫 "
-			}
-		},
+	{ conf = "ui.nerdfont", enable = true }, -- Nerd Fontに対応させる
+	{ conf = "ui.glyph-palette", enable = true }, -- Nerd Font(ファイルアイコン等)に色を反映させる
 
+	{ conf = "ui.latex", enable = true }, -- latexをレンダリング
+	{ conf = "ui.render-markdown", enable = true }, -- markdownレンダリング
 
+	{ conf = "ui.lualine", enable = true }, -- ステータスライン
+	{ conf = "ui.bufferline", enable = false }, -- バッファーライン
+	{ conf = "ui.notify", enable = true }, -- 通知トースト
+	{ conf = "ui.noice", enable = true }, -- コマンドライン、通知をリッチにする
+	{ conf = "ui.alpha", enable = true }, -- ウェルカムページ
+	{ conf = "ui.scrollbar", enable = true }, -- スクロールバー
+	{ conf = "ui.neoscroll", enable = true }, -- スクロールを滑らかにする
 
-		-- スニペット
-		"L3MON4D3/LuaSnip",
+	{ conf = "git._gitsigns", enable = true }, -- Git
+	{ conf = "git.lazygit", enable = true }, -- LazyGit
 
+	{ conf = "editor.telescope", enable = true }, -- 万能検索 (ripgrepをインストールする必要あり)
+	{ conf = "editor.toggleterm", enable = true }, -- ターミナル
+	{ conf = "editor.which-key", enable = true }, -- 登録しておいたキー割り当てを表示
+	{ conf = "editor.vimdoc-ja", enable = true }, -- ヘルプを日本語にする
+	{ conf = "editor.hop", enable = true }, -- カーソルジャンプ
+	{ conf = "editor.quick-scope", enable = true }, -- fでジャンプできる所をハイライト
 
+	{ conf = "code.highlight-colors", enable = true }, -- RGB表記に色を付ける
+	{ conf = "code.indent-blankline", enable = true }, -- インデント可視化
+	{ conf = "code.treesitter-context", enable = true }, -- 今いるコードブロックを上に表示
+	{ conf = "code.todo-comments", enable = true }, -- TODOコメントを表示
+	{ conf = "code.pretty-fold", enable = false }, -- 折りたたみをリッチにする
+	{ conf = "code.hlslens", enable = true }, -- 検索ハイライトの改善
 
-		-- copilot
-		{
-			"zbirenbaum/copilot.lua",
-			event = "InsertEnter",
-			opts = require("configs.copilot")
-		},
-		--[[ {
-			"Exafunction/codeium.nvim",
-			dependencies = {
-				"nvim-lua/plenary.nvim",
-				"hrsh7th/nvim-cmp",
-			},
-			config = function()
-				require("codeium").setup({
-				})
-			end
-		}, ]]
-		-- ステータスラインに状態を表示
-		{ "AndreM222/copilot-lualine" },
-		{
-			"yetone/avante.nvim",
-			event = "VeryLazy",
-			lazy = false,
-			version = false, -- set this if you want to always pull the latest change
-			opts = require("configs.avante"),
-			-- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
-			build = "make",
-			-- build = "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false" -- for windows
-			dependencies = {
-				"stevearc/dressing.nvim",
-				"nvim-lua/plenary.nvim",
-				"MunifTanjim/nui.nvim",
-				--- The below dependencies are optional,
-				"hrsh7th/nvim-cmp", -- autocompletion for avante commands and mentions
-				"nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
-				"zbirenbaum/copilot.lua", -- for providers='copilot'
-				'MeanderingProgrammer/render-markdown.nvim',
-				{
-					-- support for image pasting
-					"HakonHarnes/img-clip.nvim",
-					event = "VeryLazy",
-					opts = {
-						-- recommended settings
-						default = {
-							embed_image_as_base64 = false,
-							prompt_for_file_name = false,
-							drag_and_drop = {
-								insert_mode = true,
-							},
-							-- required for Windows users
-							use_absolute_path = true,
-						},
-					},
-				},
-			},
-		},
-		{ 'ryleelyman/latex.nvim',    opts = {} },
-		{
-			'MeanderingProgrammer/render-markdown.nvim',
-			dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' },
-			opts = {
-				latex = { enabled = false },
-				win_options = { conceallevel = { rendered = 2 } },
-				file_types = { 'markdown', 'Avante' },
-			},
-			ft = { 'markdown', 'Avante' },
-		},
+	{ conf = "util.surround", enable = true }, -- 囲み文字を素早く変更
+	{ conf = "util.autopairs", enable = true }, -- 自動で括弧補完
+	{ conf = "util.matchup", enable = true }, -- 言語に合わせたカッコ移動
+	{ conf = "util.comment", enable = true }, -- コメントの切り替え
+	{ conf = "util.dial", enable = true }, -- いろいろなインクリメントに対応
+	{ conf = "util.iswap", enable = true }, -- 色々スワップ
 
+	{ conf = "wakatime", enable = false }, -- WakaTime
 
+	{ conf = "theme.themery", enable = true }, -- テーマピッカー
+	{ conf = "theme.everforest", enable = true }, -- everforest
+	{ conf = "theme.kanagawa", enable = true }, -- kanagawa
+	{ conf = "theme.catppuccin", enable = true }, -- catppuccin
+}
 
-		-- DAP
-		"mfussenegger/nvim-dap",
-		-- DAP UI
-		{
-			"rcarriga/nvim-dap-ui",
-			config = true,
-			dependencies = {
-				"mfussenegger/nvim-dap",
-				"nvim-neotest/nvim-nio"
-			}
-		},
-		-- デバッグ時の変数の値や、例外の情報を表示する
-		{
-			"theHamsta/nvim-dap-virtual-text",
-			config = true,
-			dependencies = {
-				"nvim-treesitter/nvim-treesitter",
-				"mfussenegger/nvim-dap"
-			},
-		},
-		-- DAPとMasonをつなげる
-		{
-			"jay-babu/mason-nvim-dap.nvim",
-			config = function()
-				require("configs.dap")
-			end,
-			dependencies = {
-				"mfussenegger/nvim-dap",
-				"rcarriga/nvim-dap-ui",
-				"williamboman/mason.nvim"
-			},
-		},
-		-- /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+local function load_plugins()
+	local settings = {}
+	for _, plugin in ipairs(plugins) do
+		if plugin.enable then
+			table.insert(settings, require("configs." .. plugin.conf))
+		end
+	end
 
+	return settings
+end
 
-		-- クイックラン TODO: 言語に合わせてコマンドを書く
-		{
-			"CRAG666/code_runner.nvim",
-			opts = require("configs.code_runner")
-		},
-
-
-		-- ファイラー
-		{
-			"nvim-tree/nvim-tree.lua",
-			main = "nvim-tree",
-			opts = require("configs.nvim-tree")
-		},
-		{
-			"b0o/nvim-tree-preview.lua",
-			main = "nvim-tree-preview",
-			config = true,
-			dependencies = {
-				"nvim-lua/plenary.nvim",
-			}
-		},
-
-		-- -- Nerd Fontに対応させる
-		{ "lambdalisue/nerdfont.vim" },
-		-- Nerd Font(ファイルアイコン等)に色を反映させる
-		{
-			"lambdalisue/glyph-palette.vim",
-			config = function()
-				vim.api.nvim_create_augroup('GlyphPallete', {})
-				vim.api.nvim_create_autocmd('FileType', {
-					group = "GlyphPallete",
-					command = "call glyph_palette#apply()",
-					desc = "Setting up colors for nerd fonts"
-				})
-			end,
-			dependencies = "lambdalisue/nerdfont.vim"
-		},
-
-
-
-		-- UI ///////////////////////////////////////////////////////////////////////////////////////////////////////
-		-- ステータスライン
-		{
-			"nvim-lualine/lualine.nvim",
-			opts = require("configs.lualine"),
-			dependencies = "nvim-tree/nvim-web-devicons",
-		},
-		-- { "akinsho/bufferline.nvim", dependencies = "nvim-tree/nvim-web-devicons", opts = require("configs.bufferline") }, -- バッファーライン
-		-- 通知トースト
-		{
-			"rcarriga/nvim-notify",
-			priority = 900,
-			config = function()
-				require("configs.notify")
-			end
-		},
-		-- コマンドライン、通知をリッチにする
-		{
-			"folke/noice.nvim",
-			event = "VeryLazy",
-			opts = require("configs.noice"),
-			dependencies = {
-				"MunifTanjim/nui.nvim",
-				"rcarriga/nvim-notify",
-			}
-		},
-		-- //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-		-- 便利機能 /////////////////////////////////////////////////////////////////////////////////////////////////
-		-- Git
-		{
-			"lewis6991/gitsigns.nvim",
-			config = function()
-				require("gitsigns").setup(require("configs.gitsigns"))
-				require("scrollbar.handlers.gitsigns").setup()
-			end,
-		},
-		-- 万能検索 (ripgrepをインストールする必要あり)
-		{
-			"nvim-telescope/telescope.nvim",
-			tag = "0.1.6",
-			dependencies = {
-				"nvim-lua/plenary.nvim"
-			}
-		},
-		-- ターミナル
-		{
-			"akinsho/toggleterm.nvim",
-			version = "*",
-			opts = require("configs.toggleterm")
-		},
-		-- 登録しておいたキー割り当てを表示
-		{
-			"folke/which-key.nvim",
-			event = "VeryLazy",
-			opts = require("configs.which-key")
-		},
-		-- LazyGit
-		{
-			"kdheepak/lazygit.nvim",
-			cmd = {
-				"LazyGit",
-				"LazyGitConfig",
-				"LazyGitCurrentFile",
-				"LazyGitFilter",
-				"LazyGitFilterCurrentFile",
-			},
-			dependencies = {
-				"nvim-lua/plenary.nvim",
-			}
-		},
-		-- ウェルカムページ
-		{
-			'goolord/alpha-nvim',
-			config = function()
-				require 'alpha'.setup(require 'alpha.themes.theta'.config)
-			end,
-			dependencies = {
-				'nvim-tree/nvim-web-devicons',
-				'nvim-lua/plenary.nvim'
-			}
-		},
-		-- //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-		-- コーディングの便利機能 ///////////////////////////////////////////////////////////////////////////////////
-		-- RGB表記に色を付ける
-		{
-			"brenoprata10/nvim-highlight-colors",
-			opts = {
-				enable_tailwind = true
-			},
-			event = "BufEnter *.*"
-		},
-		-- インデント可視化
-		{
-			"lukas-reineke/indent-blankline.nvim",
-			main = "ibl",
-			config = true
-		},
-		-- 今いるコードブロックを上に表示
-		{
-			"nvim-treesitter/nvim-treesitter-context",
-			config = true,
-			opts = {
-				multiline_threshold = 1,
-				mode = "topline",
-			}
-		},
-		-- 囲み文字を素早く変更
-		{
-			"kylechui/nvim-surround",
-			config = true
-		},
-		-- 自動で括弧補完
-		{
-			"windwp/nvim-autopairs",
-			config = true,
-			event = "InsertEnter"
-		},
-		-- 言語に合わせたカッコ移動
-		{
-			"andymass/vim-matchup",
-		},
-		-- スクロールバー
-		{
-			"petertriho/nvim-scrollbar",
-			config = true,
-			opts = {
-				handle = {
-					blend = 75,
-					color = "#FFFFFF"
-				}
-			}
-		},
-		-- スクロールを滑らかにする
-		{
-			"karb94/neoscroll.nvim",
-			opts = require("configs.neoscroll")
-		},
-		-- コメントの切り替え
-		{
-			"numToStr/Comment.nvim",
-			opts = require("configs.comment")
-		},
-		-- TODOコメントを表示
-		{
-			"folke/todo-comments.nvim",
-			config = true,
-			dependencies = { "nvim-lua/plenary.nvim" },
-		},
-		-- 折りたたみをリッチにする
-		{
-			-- "anuvyklack/pretty-fold.nvim",
-			-- config = true
-		},
-		-- いろいろなインクリメントに対応
-		{
-			"monaqa/dial.nvim",
-			config = function() require("configs.dial") end
-		},
-		-- 色々スワップ
-		{
-			"mizlan/iswap.nvim",
-			event = "VeryLazy"
-		},
-		-- 検索ハイライトの改善
-		{
-			"kevinhwang91/nvim-hlslens",
-			config = function()
-				require("scrollbar.handlers.search").setup()
-			end,
-		},
-		-- カーソルジャンプ
-		{
-			'smoka7/hop.nvim',
-			version = "*",
-			config = true,
-		},
-		-- fでジャンプできる所をハイライト
-		{
-			"unblevable/quick-scope",
-		},
-		-- ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-		-- その他 /////////////////////////////////////////////////////////////////////////////////////////////////////
-		--[[ {
-			"wakatime/vim-wakatime",
-			lazy = false
-		}, ]]
-		-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-		-- テーマ ////////////////////////////////////////////////////////////////////////////////////////////////////
-		{ "zaldih/themery.nvim",     opts = require("configs.themery") }, -- テーマピッカー
-		{ "sainnhe/everforest",      priority = 1000 },
-		{ "rebelot/kanagawa.nvim",   priority = 1000 },
-		{
-			"catppuccin/nvim",
-			name = "catppuccin",
-			priority = 1000,
-			opts = {
-				transparent_background = true,
-				integrations = {
-					fern = true,
-					fidget = true,
-					lsp_saga = true,
-					mason = true,
-					mini = true,
-					noice = true,
-					notify = true,
-					telescope = {
-						enabled = true
-					}
-				}
-			}
-		},
-		-- ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-	},
+require("lazy").setup(
+	load_plugins(),
 	{
 		ui = {
 			border = "rounded"
