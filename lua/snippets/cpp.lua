@@ -1074,7 +1074,7 @@ class UnionFind
         }}
     }}
 
-    bool isSame(ll x, ll y) {{ return root(x) == root(y); }}
+    bool is_same(ll x, ll y) {{ return root(x) == root(y); }}
 
     ll size(ll x) {{ return -_parent[root(x)]; }}
 
