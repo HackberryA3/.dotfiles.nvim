@@ -39,8 +39,16 @@ local plugins = {
 	{ conf = "ide._mason-dap", enable = true }, -- DAPとMasonをつなげる
 	{ conf = "ide._code_runner", enable = true }, -- クイックラン
 
-	{ conf = "ui._nvim-tree", enable = true }, -- ファイラー
-	{ conf = "ui._nvim-tree-preview", enable = true }, -- ファイラーのプレビュー
+	{ conf = "editor._nvim-tree", enable = true }, -- ファイラー
+	{ conf = "editor._nvim-tree-preview", enable = true }, -- ファイラーのプレビュー
+	{ conf = "editor._telescope", enable = true }, -- NOTE: 万能検索 (ripgrepをインストールする必要あり)
+	{ conf = "editor._toggleterm", enable = true }, -- ターミナル
+	{ conf = "editor._which-key", enable = true }, -- 登録しておいたキー割り当てを表示
+	{ conf = "editor._vimdoc-ja", enable = true }, -- ヘルプを日本語にする
+	{ conf = "editor._hop", enable = true }, -- カーソルジャンプ
+	{ conf = "editor._quick-scope", enable = true }, -- fでジャンプできる所をハイライト
+	{ conf = "editor._scrollbar", enable = true }, -- スクロールバー
+	{ conf = "editor._neoscroll", enable = true }, -- スクロールを滑らかにする
 
 	{ conf = "ui._nerdfont", enable = true }, -- Nerd Fontに対応させる
 	{ conf = "ui._glyph-palette", enable = true }, -- Nerd Font(ファイルアイコン等)に色を反映させる
@@ -53,18 +61,9 @@ local plugins = {
 	{ conf = "ui._notify", enable = true }, -- 通知トースト
 	{ conf = "ui._noice", enable = true }, -- コマンドライン、通知をリッチにする
 	{ conf = "ui._alpha", enable = true }, -- ウェルカムページ
-	{ conf = "ui._scrollbar", enable = true }, -- スクロールバー
-	{ conf = "ui._neoscroll", enable = true }, -- スクロールを滑らかにする
 
 	{ conf = "git._gitsigns", enable = true }, -- Git
 	{ conf = "git._lazygit", enable = true }, -- LazyGit
-
-	{ conf = "editor._telescope", enable = true }, -- 万能検索 (ripgrepをインストールする必要あり)
-	{ conf = "editor._toggleterm", enable = true }, -- ターミナル
-	{ conf = "editor._which-key", enable = true }, -- 登録しておいたキー割り当てを表示
-	{ conf = "editor._vimdoc-ja", enable = true }, -- ヘルプを日本語にする
-	{ conf = "editor._hop", enable = true }, -- カーソルジャンプ
-	{ conf = "editor._quick-scope", enable = true }, -- fでジャンプできる所をハイライト
 
 	{ conf = "code._highlight-colors", enable = true }, -- RGB表記に色を付ける
 	{ conf = "code._indent-blankline", enable = true }, -- インデント可視化
