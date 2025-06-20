@@ -69,6 +69,7 @@ local plugins = {
 	{ conf = "code._indent-blankline", enable = true }, -- インデント可視化
 	{ conf = "code._treesitter-context", enable = true }, -- 今いるコードブロックを上に表示
 	{ conf = "code._todo-comments", enable = true }, -- TODOコメントを表示
+	{ conf = "code._ufo", enable = true }, -- 折りたたみを改善
 	{ conf = "code._pretty-fold", enable = false }, -- 折りたたみをリッチにする
 	{ conf = "code._hlslens", enable = true }, -- 検索ハイライトの改善
 

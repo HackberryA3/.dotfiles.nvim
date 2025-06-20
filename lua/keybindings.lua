@@ -35,6 +35,13 @@ return {
 		whichKey.add({
 			{ "<leader>w", proxy = "<c-w>", group = "Windows" },
 		})
+
+		keyset("n", "<TAB>", "za", noremap("折りたたみの切り替え"))
+		whichKey.add({
+			{ "z", group = "折りたたみ", icon = "󰕸" },
+			{ "zR", "<CMD>lua require('ufo').openAllFolds()<CR>", desc = "全ての折りたたみを開く" },
+			{ "zM", "<CMD>lua require('ufo').closeAllFolds()<CR>", desc = "全ての折りたたみを閉じる" },
+		})
 		-- //////////////////////////////////////////////////////////////////////////////////////////////
 		-- Visual Mode //////////////////////////////////////////////////////////////////////////////////
 		-- //////////////////////////////////////////////////////////////////////////////////////////////
@@ -54,7 +61,7 @@ return {
 				nvimTree.tree.focus()
 			end
 		end
-		whichKey.add({{ "<leader>e", nvimTreeFocusOrToggle, desc = "ファイラーを開く", icon = "󰉋" }})
+		whichKey.add({ { "<leader>e", nvimTreeFocusOrToggle, desc = "ファイラーを開く", icon = "󰉋" } })
 		-- /////////////////////////////////////////////////////////////////////////////////////////////
 
 		-- Telescope ///////////////////////////////////////////////////////////////////////////////////
@@ -66,8 +73,8 @@ return {
 			{ "<leader>fb", telescope_builtin.buffers, desc = "バッファを検索", icon = "󰈔" },
 			{ "<leader>fh", telescope_builtin.help_tags, desc = "ヘルプを検索", icon = "󰋖" },
 			{ "<leader>fc", telescope_builtin.commands, desc = "コマンドを検索", icon = "" },
-			{ "<leader>fd", telescope_builtin.diagnostics, desc = "エラーや警告の一覧", icon = ""},
-			{ "<leader>fo", telescope_builtin.treesitter, desc = "アウトラインを表示", icon = ""},
+			{ "<leader>fd", telescope_builtin.diagnostics, desc = "エラーや警告の一覧", icon = "" },
+			{ "<leader>fo", telescope_builtin.treesitter, desc = "アウトラインを表示", icon = "" },
 			{ "<leader>ft", "<CMD>TodoTelescope<CR>", desc = "TODOリストを表示", icon = "" },
 		})
 		-- /////////////////////////////////////////////////////////////////////////////////////////////
@@ -81,8 +88,8 @@ return {
 		keyset("n", "K", "<CMD>Lspsaga hover_doc<CR>")
 		keyset("n", "<F2>", "<CMD>Lspsaga rename<CR>")
 		keyset("n", "<C-k><C-k>", "<CMD>Lspsaga code_action<CR>", noremap("コードアクション"))
-		keyset("n", "[g", function() vim.diagnostic.jump({count=-1, float=true}) end, noremap("前のエラーに移動"))
-		keyset("n", "]g", function() vim.diagnostic.jump({count=1, float=true}) end, noremap("次のエラーに移動"))
+		keyset("n", "[g", function() vim.diagnostic.jump({ count = -1, float = true }) end, noremap("前のエラーに移動"))
+		keyset("n", "]g", function() vim.diagnostic.jump({ count = 1, float = true }) end, noremap("次のエラーに移動"))
 		keyset("n", "<C-k><C-e>", function() vim.lsp.buf.format({ async = true }) end, noremap("フォーマット"))
 		-- /////////////////////////////////////////////////////////////////////////////////////////////
 

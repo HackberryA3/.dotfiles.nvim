@@ -38,6 +38,12 @@ opt.smartindent = true --{}を考慮して自動でインデントする
 opt.tabstop = 4 --タブ挿入時の空白数
 opt.shiftwidth = 4 --新しい行の空白数
 
+vim.o.fillchars = [[eob: ,fold: ,foldopen:,foldsep:│,foldclose:]]
+vim.o.foldcolumn = 'auto:3' -- '0' is not bad
+vim.o.foldlevel = 99 -- NOTE: UFOを使う場合は大きい値を設定する
+vim.o.foldlevelstart = 99
+vim.o.foldenable = true
+
 opt.autoread = true --ファイルが他で変更されたら読み直す
 vim.api.nvim_create_augroup('Autoread', {}) --ファイルが他で変更されて、読み込んだときにLSPを再起動する (clangdがうまく動かなかったから)
 vim.api.nvim_create_autocmd('FileChangedShellPost', {
@@ -45,3 +51,17 @@ vim.api.nvim_create_autocmd('FileChangedShellPost', {
 	command = "e | LspRestart",
 	desc = "Restart lsp when changed the file on disk"
 })
+
+
+
+vim.diagnostic.config({
+	virtual_text = {
+		prefix = '󱓻 ',
+	},
+	severity_sort = true,
+	update_in_insert = true
+})
+vim.fn.sign_define('DiagnosticSignError', { text = '', texthl = 'DiagnosticSignError' })
+vim.fn.sign_define('DiagnosticSignWarn', { text = '', texthl = 'DiagnosticSignWarn' })
+vim.fn.sign_define('DiagnosticSignInfo', { text = '', texthl = 'DiagnosticSignInfo' })
+vim.fn.sign_define('DiagnosticSignHint', { text = '󰛨', texthl = 'DiagnosticSignHint' })
