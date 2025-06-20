@@ -39,7 +39,7 @@ opt.tabstop = 4 --タブ挿入時の空白数
 opt.shiftwidth = 4 --新しい行の空白数
 
 vim.o.fillchars = [[eob: ,fold: ,foldopen:,foldsep:│,foldclose:]]
-vim.o.foldcolumn = 'auto:3' -- '0' is not bad
+vim.o.foldcolumn = 'auto:2' -- '0' is not bad
 vim.o.foldlevel = 99 -- NOTE: UFOを使う場合は大きい値を設定する
 vim.o.foldlevelstart = 99
 vim.o.foldenable = true

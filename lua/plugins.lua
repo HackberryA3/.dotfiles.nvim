@@ -58,6 +58,7 @@ local plugins = {
 
 	{ conf = "ui._lualine", enable = true }, -- ステータスライン
 	{ conf = "ui._bufferline", enable = false }, -- バッファーライン
+	{ conf = "ui._statuscol", enable = true }, -- ステータスカラムのカスタマイズ
 	{ conf = "ui._notify", enable = true }, -- 通知トースト
 	{ conf = "ui._noice", enable = true }, -- コマンドライン、通知をリッチにする
 	{ conf = "ui._alpha", enable = true }, -- ウェルカムページ
@@ -70,7 +71,6 @@ local plugins = {
 	{ conf = "code._treesitter-context", enable = true }, -- 今いるコードブロックを上に表示
 	{ conf = "code._todo-comments", enable = true }, -- TODOコメントを表示
 	{ conf = "code._ufo", enable = true }, -- 折りたたみを改善
-	{ conf = "code._pretty-fold", enable = false }, -- 折りたたみをリッチにする
 	{ conf = "code._hlslens", enable = true }, -- 検索ハイライトの改善
 
 	{ conf = "util._surround", enable = true }, -- 囲み文字を素早く変更
