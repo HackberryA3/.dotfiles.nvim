@@ -16,10 +16,6 @@ local atcoder = s("atcoder", fmt([[
 using namespace std;
 using ll = long long;
 using ull = unsigned long long;
-template <typename T>
-using v = vector<T>;
-template <typename T>
-using vv = v<v<T>>;
 using vll = vector<ll>;
 using vvll = vector<vll>;
 using P = pair<int, int>;
