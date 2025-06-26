@@ -233,52 +233,127 @@ local rolling_hash = s("rolling_hash", fmt([[
 template <typename T>
 struct RollingHash {{
 private:
-	vector<unsigned long long> pow_bases;
-	vector<unsigned long long> hashes;
-	vector<unsigned long long> pow_bases2;
-	vector<unsigned long long> hashes2;
-public:
-	unsigned long long base;
-	unsigned long long base2;
-	static const unsigned long long mod = 2147483647;
+	vector<int64_t> pow_bases;
+	vector<int64_t> hashes;
+	vector<int64_t> inv_bases;
+	vector<int64_t> rev_hashes;
 
-	static unsigned long long generate_base() {{
-		mt19937 rnd(chrono::steady_clock::now().time_since_epoch().count());
-		return uniform_int_distribution<unsigned long long>(1, mod - 1)(rnd);
+	int64_t ext_gcd(int64_t a, int64_t b, int64_t &x, int64_t &y) {{
+		if (b == 0) {{
+			x = 1;
+			y = 0;
+			return a;
+		}}
+		int64_t d = ext_gcd(b, a % b, y, x);
+		y -= a / b * x;
+		return d;
+	}}
+	int64_t inv(int64_t a, int64_t mod) {{
+		int64_t x, y;
+		ext_gcd(a, mod, x, y);
+		return (x % mod + mod) % mod;
 	}}
 
+	int64_t mul(int64_t a, int64_t b) {{
+		__int128 res = a;
+		res *= b;
+		res %= mod;
+		return (int64_t)res;
+	}}
+
+public:
+	const int64_t base;
+	const int64_t inv_base = 0;
+	static const int64_t mod = (1LL << 61) - 1;
+
+	static int64_t generate_base() {{
+		mt19937_64 rnd(chrono::steady_clock::now().time_since_epoch().count());
+		return uniform_int_distribution<int64_t>(1, mod - 1)(rnd);
+	}}
+
+	/**
+	 * @brief ローリングハッシュのコンストラクタ O(1)
+	 * @param base ハッシュの基数。デフォルトはランダムに生成される
+	 * @param use_rev 逆方向のハッシュを計算するかどうか。デフォルトはtrue
+	 * @param inv_base 逆方向のハッシュを計算する際の基数の逆元。use_revがtrueでinv_baseが0の場合、自動的に計算される O(log)
+	 */
+	RollingHash(int64_t base = generate_base(), bool use_rev = true, int64_t inv_base = 0): base(base), inv_base(use_rev && inv_base == 0 ? inv(base, mod) : inv_base) {{
+		assert(1 <= base && base < mod && "ローリングハッシュの基数は1以上mod未満でなければなりません");
+
+		pow_bases.push_back(1);
+		hashes.push_back(0);
+		if (use_rev) {{
+			inv_bases.push_back(1);
+			rev_hashes.push_back(0);
+		}}
+	}}
 	/**
 	* @brief Iterable<T>のローリングハッシュを計算する O(n)
 	* @param s 文字列やvectorなどの添字アクセス可能なオブジェクト
 	* @param base ハッシュの基数。デフォルトはランダムに生成される
-	* @param base2 2つ目のハッシュの基数。デフォルトは-1で、使用しない
+	* @param use_rev 逆方向のハッシュを計算するかどうか。デフォルトはtrue
+	* @param inv_base 逆方向のハッシュを計算する際の基数の逆元。use_revがtrueでinv_baseが0の場合、自動的に計算される O(log)
 	*/
 	template <typename Iterable>
-	RollingHash(Iterable s, unsigned long long base = generate_base(), unsigned long long base2 = -1): pow_bases(s.size() + 1, 1), hashes(s.size() + 1, 0), base(base), base2(base2) {{
-		if (base2 != -1) {{
-			pow_bases2.resize(s.size() + 1, 1);
-			hashes2.resize(s.size() + 1, 0);
+	RollingHash(Iterable s, int64_t base = generate_base(), bool use_rev = true, int64_t inv_base = 0): RollingHash(base, use_rev, inv_base) {{
+		pow_bases.reserve(s.size() + 1);
+		hashes.reserve(s.size() + 1);
+		if (use_rev) {{
+			inv_bases.reserve(s.size() + 1);
+			rev_hashes.reserve(s.size() + 1);
 		}}
-		for (int i = 0; i < s.size(); ++i){{
-			hashes[i + 1] = ((hashes[i] * base) % mod + (unsigned long long)s[i]) % mod;
-			pow_bases[i + 1] = (pow_bases[i] * base) % mod;
-			if (base2 != -1) {{
-				hashes2[i + 1] = ((hashes2[i] * base2) % mod + (unsigned long long)s[i]) % mod;
-				pow_bases2[i + 1] = (pow_bases2[i] * base2) % mod;
-			}}
+		for (int i = 0; i < static_cast<int>(s.size()); ++i){{
+			push_back(s[i]);
 		}}
+	}}
+
+	void push_back(T c) {{
+		// hashes[i] = (hashes[i - 1] * base + (unsigned int64_t)c) % mod;
+		// 順方向は重みが軽い方に追加。123 -> 123
+		hashes.push_back((mul(hashes.back(), base) + (int64_t)c) % mod);
+		if (pow_bases.size() < hashes.size()) pow_bases.push_back(mul(pow_bases.back(), base));
+
+		// rev_hashes[i] = (base^i * c + rev_hashes[i - 1]) % mod;
+		// 逆方向は重みが重い方に追加。123 -> 321
+		if (inv_base != 0) {{
+			rev_hashes.push_back((mul(pow_bases[rev_hashes.size() - 1], (int64_t)c) + rev_hashes.back()) % mod);
+			if (inv_bases.size() < rev_hashes.size()) inv_bases.push_back(mul(inv_bases.back(), inv_base));
+		}}
+	}}
+	void pop_back() {{
+		assert(1 < (int)hashes.size() && "空のローリングハッシュから要素を削除することはできません");
+		hashes.pop_back();
+		if (rev_hashes.size() > 1) rev_hashes.pop_back();
+	}}
+
+	size_t size() const {{
+		return hashes.size() - 1;
 	}}
 
 	/**
 	* @brief [l, r) の連続部分列のハッシュ値を返す O(1)
 	*/
-	long long get(int l, int r) {{
-		unsigned long long hash1 = (hashes[r] - (hashes[l] * pow_bases[r - l]) % mod + mod) % mod;
-		unsigned long long hash2 = 0;
-		if (base2 != -1) {{
-			hash2 = (hashes2[r] - (hashes2[l] * pow_bases2[r - l]) % mod + mod) % mod;
-		}}
-		return (hash1 << 32) | hash2;
+	int64_t get(int l, int r) {{
+		assert(0 <= l && l < r && r <= (int)hashes.size() - 1 && "ローリングハッシュのgetは0 <= l < r <= size()でなければなりません");
+		// 123の23を取り出したい場合、123 - 1 * base^2
+		int64_t hash = (hashes[r] - mul(hashes[l], pow_bases[r - l]) % mod + mod) % mod;
+		return hash;
+	}}
+	/**
+	* @brief [l, r) の連続部分列の逆方向のハッシュ値を返す O(1)
+	*/
+	int64_t get_rev(int l, int r) {{
+		assert(0 <= l && l < r && r <= (int)rev_hashes.size() - 1 && "ローリングハッシュのget_revは0 <= l < r <= size()でなければなりません");
+		// 321の32を取り出したい場合、(321 - 1) / base^2 = (321 - 1) * inv_base^2
+		int64_t hash = mul((rev_hashes[r] - rev_hashes[l] + mod) % mod, inv_bases[l]);
+		return hash;
+	}}
+	/**
+	* @brief [l, r) の連続部分列が回文かどうかを判定する O(1)
+	*/
+	bool is_palindrome(int l, int r) {{
+		assert(0 <= l && l < r && r <= (int)hashes.size() - 1 && "ローリングハッシュのis_palindromeは0 <= l < r <= size()でなければなりません");
+		return get(l, r) == get_rev(l, r);
 	}}
 }};
 ]],
