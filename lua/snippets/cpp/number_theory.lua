@@ -12,7 +12,7 @@ local snip = {}
 
 local number_theory = s("number_theory", fmt([[
 /**
- * @brief 拡張ユークリッドの互除法
+ * @brief 拡張ユークリッドの互除法 O(log max(a, b))
  */
 ll ext_gcd(ll a, ll b, ll &x, ll &y) {{
     if (b == 0) {{
@@ -31,7 +31,7 @@ inline ll mmod(ll a, ll mod) {{
     return (a % mod + mod) % mod;
 }}
 /**
- * @brief 法がmodのときのaの逆元を求める
+ * @brief 法がmodのときのaの逆元を求める O(log mod)
  * @remark aとmodが互いに素である必要がある
  */
 ll inv(ll a, ll mod) {{
@@ -40,6 +40,9 @@ ll inv(ll a, ll mod) {{
     return mmod(x, mod);
 }}
 
+/**
+ * @brief 繰り返し2乗法でaのb乗を求める O(log b)
+ */ 
 ll pow(ll a, ll b) {{
     ll res = 1;
     while (b > 0) {{
@@ -49,6 +52,11 @@ ll pow(ll a, ll b) {{
     }}
     return res;
 }}
+/**
+ * @brief 繰り返し2乗法でaのb乗 % modを求める O(log b)
+ * @remark bが負のときはaの法がmodの時の逆元を求める
+ * @remark bが負のときはa^bがmodと互いに素である必要がある
+ */ 
 ll pow(ll a, ll b, ll mod) {{
 	bool inverse = b < 0;
 	if (inverse) b = -b;
