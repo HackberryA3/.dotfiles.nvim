@@ -32,7 +32,7 @@ inline ll mmod(ll a, ll mod) {{
 }}
 /**
  * @brief 法がmodのときのaの逆元を求める O(log mod)
- * @remark aとmodが互いに素である必要がある
+ * @attention aとmodが互いに素である必要がある
  */
 ll inv(ll a, ll mod) {{
     ll x, y;
@@ -54,8 +54,8 @@ ll pow(ll a, ll b) {{
 }}
 /**
  * @brief 繰り返し2乗法でaのb乗 % modを求める O(log b)
- * @remark bが負のときはaの法がmodの時の逆元を求める
- * @remark bが負のときはa^bがmodと互いに素である必要がある
+ * @note bが負のときはaの法がmodの時の逆元を求める
+ * @attention bが負のときはa^bがmodと互いに素である必要がある
  */ 
 ll pow(ll a, ll b, ll mod) {{
 	bool inverse = b < 0;
@@ -76,8 +76,6 @@ table.insert(snip, number_theory)
 local modint = s("modint", fmt([[
 /** @brief 法付き整数型
  * @note デフォルトの法は998244353
- * @note 0で初期化される
- * @note 1 <= mod
  * @note long long mint::default_modを設定することでデフォルトの法を変更できる(0を設定すると998244353になる)
  */
 struct mint
@@ -105,7 +103,9 @@ struct mint
         this->mod = mod;
     }}
 
-	/** @brief 法がmodのときの逆元 O(log mod) */
+	/** @brief 法がmodのときの逆元 O(log mod)
+	 * @attention nとmodが互いに素である必要がある
+	 */
     mint inv() const {{
         assert(gcd(n, mod) == 1);
         auto ext_gcd = [&](auto f, long long a, long long b, long long &x, long long &y) -> long long {{
@@ -124,7 +124,10 @@ struct mint
         return mint((x % mod + mod) % mod, mod);
     }}
 
-	/** @brief 繰り返し2乗法でthisのexp乗 % modを求める O(log exp) */
+	/** @brief 繰り返し2乗法でthisのexp乗 % modを求める O(log exp)
+	 * @note expが負のときはthisの法がmodの時の逆元を求める
+	 * @attention expが負のときはthis^expがmodと互いに素である必要がある
+	 * */
     mint pow(long long exp) const {{
         bool inverse = exp < 0;
         if (inverse) exp = -exp;

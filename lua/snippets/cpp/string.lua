@@ -13,6 +13,9 @@ local snip = {}
 
 
 local trie = s("trie", fmt([[
+/**
+ * @brief Trie木
+ */
 template <class T, typename T_Hash = hash<T>>
 struct Trie {{
 private:

@@ -299,7 +299,7 @@ local topological_sort = s("topological_sort", fmt([[
 /**
 * @brief トポロジカルソートO(V + E)
 * @details 有向グラフの依存関係を考慮したソート
-* @remark グラフが有向非巡回グラフ(DAG)の場合のみ使用可能
+* @attention グラフが有向非巡回グラフ(DAG)の場合のみ使用可能
 * @remark queueをpriority_queueに変えると、辞書順最小/最大のトポロジカルソートが得られる
 * @remark 特定の頂点への最短経路を求める場合は、向きを反転したグラフに、その頂点から帰りがけ順にDFSをする
 * @param graph 隣接リスト
@@ -340,8 +340,11 @@ table.insert(snip, topological_sort)
 local euler_tour = s("euler_tour", fmt([[
 /**
 * @brief オイラーツアー O(V+E)
-* @remark 木であること
-* @remark 無向グラフ、または根から全ての頂点を回ること
+* @attention 木であること
+* @attention 無向グラフ、または根から全ての頂点を回れること
+* @param g 隣接リスト
+* @param root 開始する頂点番号
+* @return 各頂点の部分木の始まりを表すvectorと、部分木の終わりを表すvectorのペア
 */
 pair<vector<long long>, vector<long long>> euler_tour(const vector<vector<long long>> g, const int root = 0) {{
 	vector<long long> start(n, 0); // 新たな頂点番号&区間の始まり
@@ -431,12 +434,11 @@ table.insert(snip, union_find)
 local cycle_detection = s("cycle_detection", fmt([[
 /** 
 * @brief グラフのサイクル検出 O(V + E)
-* @details 最初に見つけたサイクルを返す
 * @param G 隣接リスト(Edge<T>にfromを設定する必要がある)
 * @param directional 逆流を許すか(無向グラフの場合はfalse)
 * @param all 全ての頂点から探索を開始するか
 * @param start 探索を開始する頂点
-* @return サイクルの辺のリスト
+* @return 最初に見つけたサイクルの辺のリスト
 */
 template <class T>
 vector<Edge<T>> detect_cycle(const Graph<T> &G, const bool directional = true, const bool all = true, const int start = 0) {{
@@ -505,6 +507,9 @@ table.insert(snip, cycle_detection)
 local scc = s("scc", fmt([[
 /**
  * @brief 強連結成分分解(Strongly Connected Components)
+ * @details 強連結成分を1つのノードとして扱うグラフを再構築する
+ * @attention グラフが有向非巡回グラフ(DAG)である必要がある
+ * @note 新たなグラフはトポロジカル順になる
  */
 struct SCC
 {{
@@ -589,6 +594,7 @@ struct SCC
 	/**
 	 * @brief 強連結成分分解を行う O(3 * |V|+|E|)
 	 * @details 強連結成分を1つのノードとして扱うグラフを再構築する
+	 * @attention グラフが有効非巡回グラフ(DAG)である必要がある
 	 */
     SCC(vector<vector<long long>> &_G) : n(_G.size()), G(_G), rG(vector<vector<long long>>(n)), component(vector<long long>(n, -1)) {{
         // 逆辺を張ったグラフを作成
@@ -602,9 +608,12 @@ struct SCC
 		rebuild();
     }}
 
+	/**
+	 * @brief 強連結成分の数(新たなグラフのノード数)を取得する
+	 */
 	size_t size() const {{ return component_count; }}
 	/**
-	 * @brief 強連結成分の番号を取得する
+	 * @brief 元の頂点vが属する強連結成分の番号(新たな頂点番号)を取得する
 	 * @param v 頂点の番号
 	 */
 	long long get_component(long long v) const {{
@@ -629,15 +638,19 @@ struct SCC
 	}}
 
 	/**
-	 * @brief 強連結成分のグラフを取得する
-	 * @remark トポロジカル順に並んでいる
+	 * @brief 新たなグラフのcomponentから伸びている先のリストを取得する
+	 * @details あたかもSCCのインスタンスを隣接リストのように扱える
+	 * @note トポロジカル順に並んでいる
+	 * @attention 戻り値は参照なので破壊的変更に注意
 	 * @param component 強連結成分の番号
 	 */
 	vector<long long>& operator[](long long component) {{
 		assert(0 <= component && component < size());
 		return rebuildedG[component];
 	}}
-	// 暗黙的なvector<vector<long long>>への変換
+	/**
+	 * @brief 暗黙的なstd::vector<std::vector<long long>>への変換
+	 */
 	operator vector<vector<long long>>() const {{ return rebuildedG; }}
 
 	/**

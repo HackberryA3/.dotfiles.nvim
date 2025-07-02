@@ -365,6 +365,9 @@ class LinkedList
 table.insert(snip, linked_list)
 
 local segtree = s("segtree", fmt([[
+/** @brief セグメント木
+ * @tparam T 値の型
+ */
 template <typename T>
 class segtree
 {{
@@ -392,8 +395,7 @@ class segtree
     /**
      * @brief セグメント木
      * @param len 配列の長さ
-     * @param e 単位元（評価するときの意味のない値。MinQueryの場合、min(x,
-     * INF)のINFは意味がない）
+     * @param e 単位元（評価するときの意味のない値。MinQueryの場合、min(x, INF)のINFは意味がない）
      * @param query クエリ関数
      */
     segtree(int len, T e, function<T(T, T)> query) : E(e), _query(std::move(query)), _length(1) {{
