@@ -31,6 +31,16 @@ return {
 					word = false,
 					cyclic = true,
 				},
+				augend.constant.new {
+					elements = { "Yes", "No" },
+					word = true,
+					cyclic = true,
+				},
+				augend.constant.new {
+					elements = { "YES", "NO" },
+					word = true,
+					cyclic = true,
+				}
 			},
 		}
 	end
