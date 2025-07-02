@@ -13,7 +13,11 @@ local function extract_include_paths(compile_flags_path)
 		if line:match("^%-I") then
 			local rel_path = line:match("^%-I%s*(.+)$")
 			if rel_path then
-				local abs_path = vim.fn.fnamemodify(base_dir .. "/" .. rel_path, ":p")
+				local abs_path = rel_path
+				if abs_path:sub(1, 1) ~= "/" then
+					-- 相対パスの場合、絶対パスに変換
+					abs_path = vim.fn.fnamemodify(base_dir .. "/" .. rel_path, ":p")
+				end
 				table.insert(include_paths, "-I" .. abs_path)
 			end
 		end
@@ -21,8 +25,34 @@ local function extract_include_paths(compile_flags_path)
 	return include_paths
 end
 
+-- 正規表現にマッチするかどうかを返す関数
+local function buffer_contains_pattern(pattern)
+  -- 現在のバッファの全行を取得
+  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+
+  -- 各行をループしてパターンにマッチするか確認
+  for _, line in ipairs(lines) do
+    if string.find(line, pattern) then
+      return true
+    end
+  end
+
+  return false
+end
+
 -- コマンド定義
 vim.api.nvim_create_user_command("Ojbundle", function()
+	-- バッファに#include <atcoder.*>が含まれているか確認
+	if buffer_contains_pattern("#include%s*<atcoder.*>") then
+		vim.notify("#include <>で読み込んでいます！#include \"\"を使用してください。", vim.log.levels.ERROR)
+		return
+	end
+	if buffer_contains_pattern("#include%s*<boost.*>") then
+		vim.notify("#include <>で読み込んでいます！#include \"\"を使用してください。", vim.log.levels.ERROR)
+		return
+	end
+
+
 	local buf_path = vim.api.nvim_buf_get_name(0)
 	if buf_path == "" then
 		vim.notify("バッファのパスが取得できません。", vim.log.levels.ERROR)
