@@ -74,6 +74,12 @@ ll pow(ll a, ll b, ll mod) {{
 table.insert(snip, number_theory)
 
 local modint = s("modint", fmt([[
+/** @brief 法付き整数型
+ * @note デフォルトの法は998244353
+ * @note 0で初期化される
+ * @note 1 <= mod
+ * @note long long mint::default_modを設定することでデフォルトの法を変更できる(0を設定すると998244353になる)
+ */
 struct mint
 {{
   private:
@@ -99,6 +105,7 @@ struct mint
         this->mod = mod;
     }}
 
+	/** @brief 法がmodのときの逆元 O(log mod) */
     mint inv() const {{
         assert(gcd(n, mod) == 1);
         auto ext_gcd = [&](auto f, long long a, long long b, long long &x, long long &y) -> long long {{
@@ -117,6 +124,7 @@ struct mint
         return mint((x % mod + mod) % mod, mod);
     }}
 
+	/** @brief 繰り返し2乗法でthisのexp乗 % modを求める O(log exp) */
     mint pow(long long exp) const {{
         bool inverse = exp < 0;
         if (inverse) exp = -exp;

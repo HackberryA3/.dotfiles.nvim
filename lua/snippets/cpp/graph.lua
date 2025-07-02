@@ -13,7 +13,9 @@ local snip = {}
 
 
 local graph = s("graph", fmt([[
-template <class T> struct Edge
+/** @brief コスト付きの有向辺 */
+template <class T>
+struct Edge
 {{
     int from;
     int to;
@@ -39,12 +41,14 @@ template <class T> struct Edge
 }};
 template <class T> using Graph = vector<vector<Edge<T>>>;
 
+/** @brief 有向グラフの辺を反転する */
 template <class T>
 vector<vector<T>> inverseGraph(const vector<vector<T>>& G) {{
 	vector<vector<T>> rG(G.size());
 	rep(i, G.size()) for (const T& e : G[i]) rG[e].push_back(i);
 	return rG;
 }}
+/** @brief 有向グラフの辺を反転する */
 template <class T>
 vector<vector<Edge<T>>> inverseGraph(const vector<vector<Edge<T>>>& G) {{
 	vector<vector<Edge<T>>> rG(G.size());
@@ -363,6 +367,7 @@ pair<vector<long long>, vector<long long>> euler_tour(const vector<vector<long l
 table.insert(snip, euler_tour)
 
 local union_find = s("union_find", fmt([[
+/** @brief UnionFind木(Disjoint Set Union) */
 class UnionFind
 {{
   private:
@@ -370,16 +375,21 @@ class UnionFind
     vector<ll> _parent;
 
   public:
+	/** @brief UnionFind木を初期化
+	 * @param size 頂点数
+	 */
     UnionFind(ll size) {{
         _size = size;
         _parent.resize(_size, -1);
     }}
 
+	/** @brief 頂点xが属するグループの値を求める O(償却1) */
     ll root(ll x) {{
         if (_parent[x] < 0) return x;
         else return _parent[x] = root(_parent[x]);
     }}
 
+	/** @brief 頂点xと頂点yを同じグループにする O(償却1) */
     void unite(ll x, ll y) {{
         x = root(x);
         y = root(y);
@@ -390,10 +400,13 @@ class UnionFind
         }}
     }}
 
+	/** @brief xとyが同じグループに属するかを判定 O(償却1) */
     bool is_same(ll x, ll y) {{ return root(x) == root(y); }}
 
+	/** @brief 頂点xが属するグループのサイズを求める O(償却1) */
     ll size(ll x) {{ return -_parent[root(x)]; }}
 
+	/** @brief すべてのグループを列挙 O(n) */
     vector<vector<ll>> groups() {{
         vector<vector<ll>> member(_size);
         for (ll i = 0; i < _size; ++i) {{
@@ -575,6 +588,7 @@ struct SCC
   public:
 	/**
 	 * @brief 強連結成分分解を行う O(3 * |V|+|E|)
+	 * @details 強連結成分を1つのノードとして扱うグラフを再構築する
 	 */
     SCC(vector<vector<long long>> &_G) : n(_G.size()), G(_G), rG(vector<vector<long long>>(n)), component(vector<long long>(n, -1)) {{
         // 逆辺を張ったグラフを作成

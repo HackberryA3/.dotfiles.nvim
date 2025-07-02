@@ -13,6 +13,7 @@ local snip = {}
 
 
 local offset_vector = s("offset_vector", fmt([[
+/** @brief 負のインデックスをサポートするベクトル*/
 template <typename T>
 struct offset_vector {{
 	vector<T> data;
@@ -89,7 +90,13 @@ struct offset_vector {{
 table.insert(snip, offset_vector)
 
 local linked_list = s("linked_list", fmt([[
-template <class T, typename Hash = hash<T>> class LinkedList
+/** @brief 双方向連結リスト
+ * @tparam T 値の型
+ * @tparam Hash ハッシュ関数の型（デフォルトはstd::hash<T>）
+ * @details 特定の値を持つノードをO(1)で検索できるように、unordered_map<T, unordered_set<Node *>, Hash>でノードを管理。
+ */
+template <class T, typename Hash = hash<T>>
+class LinkedList
 {{
   public:
     struct Node
@@ -521,8 +528,7 @@ class lazy_segtree : public segtree<T>
      * @param queryFunc クエリ関数
      * @param mergeFunc lazyを子のlazyに伝播させる関数
      * @param applyFunc lazyをdataに適用する関数
-     * @param proportionFunc
-     * lazyをdataに適用する時に、区間の長さに応じて値を変える関数
+     * @param proportionFunc lazyをdataに適用する時に、区間の長さに応じて値を変える関数
      * @param me lazyの単位元
      */
     lazy_segtree(int len, T e, function<T(T, T)> queryFunc, function<T(T, T)> mergeFunc, function<T(T, T)> applyFunc, function<T(T, int)> proportionFunc, T me)
@@ -615,6 +621,7 @@ class lazy_segtree : public segtree<T>
     }}
 }};
 
+/** @brief 遅延セグメント木のMax, Min, Sumクエリをまとめた構造体 */
 struct S
 {{
     ll sum;
