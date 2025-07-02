@@ -114,3 +114,5 @@ vim.api.nvim_create_autocmd("FileType", {
 	command = "set filetype=jsonc",
 	desc = "Convert filetype from json to jsonc to allow comments"
 })
+
+require("custom_func.ojbundle")
