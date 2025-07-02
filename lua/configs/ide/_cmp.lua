@@ -12,7 +12,7 @@ return {
 		local cmp = require("cmp")
 		local luasnip = require("luasnip")
 		local copilot = nil
-		if require("configs").ai.enable and require("configs").ai.use_codeium then
+		if require("configs").ai.enable and require("configs").ai.use_copilot then
 			copilot = require("copilot.suggestion")
 		end
 
