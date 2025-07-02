@@ -1,5 +1,6 @@
 return {
 	"zbirenbaum/copilot.lua",
+	enabled = require("configs").ai.enable and require("configs").ai.use_copilot,
 	event = "InsertEnter",
 	opts = {
 		suggestion = {

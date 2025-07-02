@@ -11,7 +11,10 @@ return {
 	config = function()
 		local cmp = require("cmp")
 		local luasnip = require("luasnip")
-		local copilot = require("copilot.suggestion")
+		local copilot = nil
+		if require("configs").ai.enable and require("configs").ai.use_codeium then
+			copilot = require("copilot.suggestion")
+		end
 
 		local cmp_kinds = {
 			Text = '  ',
@@ -61,7 +64,7 @@ return {
 						cmp.confirm({ select = true }) --Ctrl+yで補完を選択確定
 					elseif luasnip.expand_or_jumpable() then
 						luasnip.expand_or_jump()
-					elseif copilot.is_visible() then
+					elseif copilot ~= nil and copilot.is_visible() then
 						copilot.accept()
 					else
 						fallback()

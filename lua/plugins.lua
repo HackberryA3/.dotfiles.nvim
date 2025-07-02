@@ -61,6 +61,7 @@ local plugins = {
 	{ conf = "ui._statuscol", enable = true }, -- ステータスカラムのカスタマイズ
 	{ conf = "ui._notify", enable = true }, -- 通知トースト
 	{ conf = "ui._noice", enable = true }, -- コマンドライン、通知をリッチにする
+	{ conf = "ui._dressing", enable = true }, -- 入力ダイアログをリッチにする
 	{ conf = "ui._alpha", enable = true }, -- ウェルカムページ
 
 	{ conf = "git._gitsigns", enable = true }, -- Git
