@@ -368,6 +368,7 @@ local manacher = s("manacher", fmt([[
 /**
 * @brief Manacher O(|s|)
 * @return i番目の文字を中心とした回文の長さを格納した配列
+* @see https://snuke.hatenablog.com/entry/2014/12/02/235837
 */
 vector<long long> manacher(const string s) {{
 	vector<long long> res(s.size(), 0);
@@ -387,5 +388,30 @@ vector<long long> manacher(const string s) {{
 	{}
 ))
 table.insert(snip, manacher)
+
+local z_algorithm = s("z_algorithm", fmt([[
+/**
+* @brief Z-Algorithm O(|s|)
+* @return i番目の文字から始まるsの接頭辞と一致する部分文字列の長さを格納した配列
+* @see https://snuke.hatenablog.com/entry/2014/12/03/214243
+*/
+vector<int> z_algorithm(const string& s) {{
+	vector<int> res(s.size(), 0);
+	res[0] = s.size();
+	int i = 1, j = 0;
+	while (i < s.size()) {{
+		while (i+j < s.size() && s[j] == s[i+j]) ++j;
+		res[i] = j;
+		if (j == 0) {{ ++i; continue; }}
+		int k = 1;
+		while (i+k < s.size() && k+res[k] < j) res[i+k] = res[k], ++k;
+		i += k; j -= k;
+	}}
+	return res;
+}}
+]],
+	{}
+))
+table.insert(snip, z_algorithm)
 
 return snip
