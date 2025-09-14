@@ -116,6 +116,18 @@ return {
 		-- Code Runner /////////////////////////////////////////////////////////////////////////////////
 		keyset("n", "<F4>", function() vim.cmd("RunCode") end)
 		-- /////////////////////////////////////////////////////////////////////////////////////////////
+		-- Test Runner ////////////////////////////////////////////////////////////////////////////////
+		whichKey.add({
+			{ "<leader>t", group = "テスト", icon = "" },
+			{ "<leader>tt", function() require("neotest").summary.toggle() end, desc = "テストサマリーを表示" },
+			{ "<leader>tn", function() require("neotest").run.run() end, desc = "テストを実行" },
+			{ "<leader>tf", function() require("neotest").run.run(vim.fn.expand("%")) end, desc = "ファイルのテストを実行" },
+			{ "<leader>ts", function() require("neotest").run.stop() end, desc = "テストを停止" },
+			{ "<leader>to", function() require("neotest").output.open({ enter = true }) end, desc = "テスト出力を開く" },
+			{ "<leader>tp", function() require("neotest").run.run({ suite = true }) end, desc = "スイートのテストを実行" },
+			{ "<leader>tS", function() require("neotest").run.stop({ suite = true }) end, desc = "スイートのテストを停止" },
+			{ "<leader>tO", function() require("neotest").output_panel.toggle() end, desc = "テスト出力パネルを切り替え" },
+		})
 
 		-- Dial ////////////////////////////////////////////////////////////////////////////////////////
 		keyset("n", "<C-a>", function()
@@ -176,7 +188,7 @@ return {
 		keyset("n", "<leader>j", "<CMD>HopWord<CR>", noremap("単語ジャンプ"))
 		-- /////////////////////////////////////////////////////////////////////////////////////////////
 
-		keyset("n", "<leader>t", "<CMD>Themery<CR>", noremap("テーマ切り替え"))
+		keyset("n", "<leader>m", "<CMD>Themery<CR>", noremap("テーマ切り替え"))
 		keyset("n", "<leader>s", "<CMD>ISwapWith<CR>", noremap("スワップ"))
 
 		whichKey.add({

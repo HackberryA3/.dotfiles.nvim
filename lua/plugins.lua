@@ -38,6 +38,7 @@ local plugins = {
 	{ conf = "ide._dap-virtual-text", enable = true }, -- デバッグ時の変数の値や、例外の情報を表示する
 	{ conf = "ide._mason-dap", enable = true }, -- DAPとMasonをつなげる
 	{ conf = "ide._code_runner", enable = true }, -- クイックラン
+	{ conf = "ide._neotest", enable = true }, -- テストランナー
 
 	{ conf = "editor._nvim-tree", enable = true }, -- ファイラー
 	{ conf = "editor._nvim-tree-preview", enable = true }, -- ファイラーのプレビュー
