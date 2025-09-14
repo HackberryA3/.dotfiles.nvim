@@ -66,6 +66,14 @@ return {
 					return "if (which python3 >/dev/null 2>&1); then python3 -u $fileName; else python -u $fileName; fi"
 				end
 			end,
+			java = function()
+				vim.notify("uname: " .. vim.inspect(vim.loop.os_uname()))
+				if vim.loop.os_uname().sysname == "Linux" then
+					return "cd $dir && java $fileName"
+				else
+					return "cd $dir && javac $fileName && java -cp $dir $fileNameWithoutExt"
+				end
+			end,
 		}
 	}
 }
