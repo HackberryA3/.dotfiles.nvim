@@ -16,21 +16,21 @@ local trie = s("trie", fmt([[
 /**
  * @brief Trie木
  */
-template <class T, typename T_Hash = hash<T>>
+template <class T, class Data = byte, typename T_Hash = hash<T>>
 struct Trie {{
-private:
+public:
 	struct Node {{
 		unordered_map<T, Node*, T_Hash> next;
 		unordered_set<int> accept;
 		T c;
 		int common;
+		Data data;
 		Node(T c) : c(c), common(0) {{
 		}}
 	}};
-
+private:
 	Node* root;
 	int n;
-
 public:
 	Trie() : root(new Node(-1)), n(0) {{
 	}}
@@ -99,7 +99,7 @@ public:
 	Node get(const Iterable& s) {{
 		Node* now = root;
 		for (const T& c : s) {{
-			if (!now->next.count(c)) throw runtime_error("The char " + c + " of " + s + " is not found");
+			if (!now->next.count(c)) throw runtime_error("The char " + to_string(c) + " of " + s + " is not found");
 			now = now->next[c];
 		}}
 		return *now;
@@ -413,5 +413,316 @@ vector<int> z_algorithm(const string& s) {{
 	{}
 ))
 table.insert(snip, z_algorithm)
+
+
+
+local suffix_array = s("suffix_array", fmt([=[
+class SuffixArray
+{{
+private:
+	/**
+	* @brief i文字目がLeft most S-type(連続するS-typeのうち、最も左にあるもの)かどうか
+	*/
+    bool is_lms(const vector<char> &t, int i) {{
+        return i > 0 && t[i] == 's' && t[i - 1] == 'l';
+    }}
+	
+	template <typename Iterable, typename T = typename Iterable::value_type>
+    vector<int> induced_sort(const vector<char> &t, const Iterable &s, const ll k, const vector<int> &lmss) {{
+        vector<int> sa(s.size(), -1);
+
+        // 各文字がソート後に始まる位置を求める
+        vector<int> bin(k + 1, 0);
+        for (int i = 0; i < s.size(); ++i)
+            bin[s[i] + 1]++;
+        for (int i = 1; i < bin.size(); ++i)
+            bin[i] += bin[i - 1];
+
+        // LMSを、saのbinに後ろから格納
+        vector<int> count(k, 0);
+        for (int i = lmss.size() - 1; i >= 0; --i) {{
+            T ch = s[lmss[i]];
+            sa[bin[ch + 1] - 1 - count[ch]] = lmss[i];
+            count[ch]++;
+        }}
+
+		// L-typeをsaのbinに前から格納(Lは必ずSの前に来る)
+        count.assign(k, 0);
+        for (int i = 0; i < sa.size(); ++i) {{
+            if (sa[i] == -1) continue;
+            if (sa[i] == 0) continue;
+            if (t[sa[i] - 1] == 's') continue;
+            T ch = s[sa[i] - 1];
+            sa[bin[ch] + count[ch]] = sa[i] - 1;
+            count[ch]++;
+        }}
+
+		// S-typeをsaのbinに後ろから格納(Sは必ずLの後に来る)
+        count.assign(k, 0);
+        for (int i = sa.size() - 1; i >= 0; --i) {{
+            if (sa[i] == -1) continue;
+            if (sa[i] == 0) continue;
+            if (t[sa[i] - 1] == 'l') continue;
+            T ch = s[sa[i] - 1];
+            sa[bin[ch + 1] - 1 - count[ch]] = sa[i] - 1;
+            count[ch]++;
+        }}
+
+        return sa;
+    }}
+
+	template <typename Iterable>
+	vector<int> sa_is(const Iterable &s, const ll k) {{
+		vector<char> t(s.size());
+		t[s.size() - 1] = 's';
+		for (int i = s.size() - 2; i >= 0; --i) {{
+			// 今のSuffixと次のSuffixを比較して、辞書順で小さいなら's'、大きいなら'l'、同じなら次のSuffixと同じにする
+			if (s[i] < s[i + 1]) t[i] = 's';
+			else if (s[i] > s[i + 1]) t[i] = 'l';
+			else t[i] = t[i + 1];
+		}}
+
+		// LMSを全て列挙
+		vector<int> lmss;
+		lmss.reserve(s.size());
+		for (int i = 0; i < s.size(); ++i) {{
+			if (is_lms(t, i)) lmss.push_back(i);
+		}}
+
+		vector<int> seed = lmss;
+		// 最初はLMSの順番は不明なので、LMSの順番でsaを初期化
+		vector<int> sa = induced_sort(t, s, k, seed);
+
+		// ソートされたsaからLMSだけを取り出す
+		vector<int> new_lmss;
+		for (int i = 0; i < sa.size(); ++i) {{
+			if (is_lms(t, sa[i])) new_lmss.push_back(sa[i]);
+		}}
+		sa = new_lmss;
+
+		// LMSを比較して、同じなら同じ番号、違うなら違う番号を振る
+		vector<int> nums(s.size(), -1);
+		ll num = nums[sa[0]] = 0;
+		for (int i = 1; i < sa.size(); ++i) {{
+			int l = sa[i - 1], r = sa[i];
+			bool diff = false;
+			for (int d = 0; d < s.size(); ++d) {{
+				if (s[l + d] != s[r + d] ||
+					is_lms(t, l + d) != is_lms(t, r + d)) {{
+					diff = true;
+					break;
+				}}
+				else if (d > 0 && (is_lms(t, l + d) || is_lms(t, r + d))) {{
+					break;
+				}}
+			}}
+			if (diff) num++;
+			nums[sa[i]] = num;
+		}}
+
+		// 元のLMSの順番に並び替え
+		vector<int> res_nums;
+		for (int pos : lmss) {{
+			res_nums.push_back(nums[pos]);
+		}}
+
+		// もしLMSの種類数がLMSの数と同じでなければ、再帰的にsa_isを呼ぶ
+		if (num + 1 < res_nums.size()) {{
+			sa = sa_is(res_nums, num + 1);
+		}}
+		else {{
+			// 種類数とLMSの数が同じなら、saを復元できる
+			sa.resize(res_nums.size());
+			for (int i = 0; i < res_nums.size(); ++i) {{
+				sa[res_nums[i]] = i;
+			}}
+		}}
+
+		seed.assign(sa.size(), 0);
+		for (int i = 0; i < sa.size(); ++i) {{
+			seed[i] = lmss[sa[i]];
+		}}
+
+		sa = induced_sort(t, s, k, seed);
+		return sa;
+	}}
+
+	vector<int> result;
+
+public:
+	/**
+	* @brief Suffix Arrayを構築する O(n)
+	* @param s 添字アクセス可能なコンテナ
+	* @param minimum sの要素の最小値 (文字なら0, 数字なら-INFなど)
+	* @param k sの要素の種類数 (文字なら256, 数字なら取りうる範囲（10^9等の場合は座標圧縮してから構築）)
+	*/
+	template <typename Iterable, typename T = typename Iterable::value_type>
+    SuffixArray(const Iterable &s, const T minimum = 0, const int k = 256) {{
+        Iterable str = s;
+        str.push_back(minimum);
+
+        result = sa_is(str, k);
+		result.erase(result.begin());
+    }}
+
+	size_t size() const {{
+		return result.size();
+	}}
+	vector<int> get() const {{
+		return result;
+	}}
+	int operator[](const int i) const {{
+		return result[i];
+	}}
+
+	auto begin() const {{ return result.begin(); }}
+	auto end() const {{ return result.end(); }}
+}};
+]=],
+	{}
+))
+table.insert(snip, suffix_array)
+
+local ahocorasick = s("aho_corasick", fmt([[
+template <class T, typename T_Hash = hash<T>>
+struct AhoCorasick {{
+public:
+	struct Node {{
+		unordered_map<T, Node*, T_Hash> next;
+		set<int> accept;
+		Node* parent = nullptr;
+		Node* fail = nullptr;
+		T c;
+		int v = -1;
+		Node(T c, Node* parent, int v) : c(c), parent(parent), v(v) {{}}
+	}};
+private:
+	int n;
+	vector<Node*> nodes;
+	Node* root;
+
+	Node* make_node(T c, Node* parent) {{
+		Node* node = new Node(c, parent, nodes.size());
+		nodes.push_back(node);
+		return node;
+	}}
+public:
+	AhoCorasick() : n(0), nodes(vector<Node*>()), root(make_node('\0', nullptr)) {{}}
+
+	Node* get_root() const {{
+		return root;
+	}}
+	Node* get_node(int v) const {{
+		return nodes[v];
+	}}
+	size_t size() const {{
+		return n;
+	}}
+	size_t node_count() const {{
+		return nodes.size();
+	}}
+
+	/**
+	 * @brief 文字列sをAhoCorasickに挿入する O(|s|)
+	 * @param s 挿入する文字列
+	 * @param id 挿入する文字列のID(文字列の終端のノードにIDを保存しておく)
+	 */
+	template <class Iterable>
+	void insert(const Iterable& s, int id) {{
+		Node* now = root;
+		for (const T& c : s) {{
+			if (!now->next.count(c)) {{
+				now->next[c] = make_node(c, now);;
+			}}
+			now = now->next[c];
+		}}
+		now->accept.insert(id);
+		n++;
+	}}
+
+	/**
+	 * @brief AhoCorasickの各ノードの失敗関数を構築する O(V)
+	 */
+	void build() {{
+		queue<Node*> q;
+		for (auto& [c, next] : root->next) {{
+			next->fail = root;
+			q.push(next);
+		}}
+
+		while (!q.empty()) {{
+			Node* now = q.front();
+			q.pop();
+
+			for (auto& [c, next] : now->next) {{
+				Node* f = now->fail;
+				// 次のノードに対する失敗関数を求める
+				// そのために、現在のノードの失敗関数を辿っていく
+				// 現在のノード+c = 現在のノードの接尾辞+c となるノードを探す
+				while (f != nullptr && !f->next.count(c)) {{
+					f = f->fail;
+				}}
+				// もし見つからなかったら、失敗関数はroot
+				if (f == nullptr) {{
+					next->fail = root;
+				}} else {{
+					next->fail = f->next[c];
+				}}
+
+				// 失敗関数の受理状態も引き継ぐ
+				for (auto id : next->fail->accept) {{
+					next->accept.insert(id);
+				}}
+				q.push(next);
+			}}
+		}}
+
+		root->fail = root;
+	}}
+
+	/**
+	 * @brief 現在のノードnowから文字cに遷移した先のノードを返す O(1)
+	 */
+	Node* next(Node* now, const T& c) const {{
+		while (now != root && !now->next.count(c)) now = now->fail;
+		if (now->next.count(c)) now = now->next[c];
+		return now;
+	}}
+
+	/**
+	* @brief 文字列sの部分文字列があるかを調べる O(|s|)
+	* @param s 調べる文字列
+	*/
+	template <class Iterable>
+	bool match(const Iterable& s) {{
+		Node* now = root;
+		if (now->accept.size() > 0) return true;
+		for (const T& c : s) {{
+			now = next(now, c);
+			if (now->accept.size() > 0) return true;
+		}}
+		return false;
+	}}
+	/**
+	* @brief 文字列sの部分文字列のidを全て返す O(|s|)
+	* @param s 調べる文字列
+	*/
+	template <class Iterable>
+	set<int> substrings(const Iterable& s) {{
+		set<int> res;
+		Node* now = root;
+		for (const T& c : s) {{
+			now = next(now, c);
+			for (auto id : now->accept) {{
+				res.insert(id);
+			}}
+		}}
+		return res;
+	}}
+}};
+]],
+	{}
+))
+table.insert(snip, ahocorasick)
 
 return snip
