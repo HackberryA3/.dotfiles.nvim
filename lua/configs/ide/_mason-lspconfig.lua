@@ -116,13 +116,14 @@ return {
 
 	require("mason-lspconfig").setup_handlers {
 		function(server_name)
-			require("lspconfig")[server_name].setup {
+			vim.lsp.config(server_name, {
 				on_attach = on_attach,
 				capabilities = capabilities, --cmpを連携
-			}
+			})
+			vim.lsp.enable(server_name)
 		end,
 		["lua_ls"] = function()
-			require("lspconfig").lua_ls.setup {
+			vim.lsp.config("lua_ls", {
 				on_attach = on_attach,
 				capabilities = capabilities,
 				settings = {
@@ -139,23 +140,26 @@ return {
 						}
 					},
 				},
-			}
+			})
+			vim.lsp.enable("lua_ls")
 		end,
 		["omnisharp"] = function()
-			require("lspconfig").omnisharp.setup {
+			vim.lsp.config("omnisharp", {
 				on_attach = on_attach,
 				capabilities = capabilities,
 				enable_roslyn_analyzer = true,
 				organize_imports_on_format = true,
 				enable_import_completion = true
-			}
+			})
+			vim.lsp.enable("omnisharp")
 		end
 	}
 
-	--[[require("lspconfig").clangd.setup({
+	--[[vim.lsp.config("clangd", {
 		on_attach = on_attach,
 		capabilities = capabilities,
 		cmd = { "clangd" }
-	})]]
+	})
+	vim.lsp.enable("clangd")]]
 	end
 }
