@@ -16,124 +16,131 @@ local linalg = s("linalg", fmt([[
 constexpr double DEG2RAD = M_PI / 180.0;
 constexpr double RAD2DEG = 180.0 / M_PI;
 
+template <typename Derived, typename T>
+struct vector2_base;
+
 template <typename T>
 struct matrix {{
 private:
 	vector<vector<T>> d;
 	size_t n, m;
 public:
+	matrix(const matrix& o) = default;
 	matrix(size_t n, size_t m, T init = T()) : d(n, vector<T>(m, init)), n(n), m(m) {{}}
 
-	vector<T> operator[](size_t i) const {{ return d[i]; }}
 	vector<T>& operator[](size_t i) {{ return d[i]; }}
+	const vector<T>& operator[](size_t i) const {{ return d[i]; }}
 	size_t rows() const {{ return n; }}
 	size_t cols() const {{ return m; }}
-	void resize(size_t new_n, size_t new_m, T init = T()) {{
-		d.resize(new_n);
-		for (size_t i = 0; i < new_n; ++i) {{
-			d[i].resize(new_m, init);
-		}}
-		n = new_n;
-		m = new_m;
+
+	matrix& operator=(const matrix& o) {{
+		if (this == &o) return *this;
+		d = o.d;
+		n = o.n;
+		m = o.m;
+		return *this;
 	}}
 
-	matrix& operator=(const matrix& other) {{ return *other; }}
-	matrix& operator+=(const matrix& other) {{
-		if (n != other.n || m != other.m) {{
-			throw std::invalid_argument("行列の足し算は同じサイズでなければなりません。" + std::to_string(n) + "x" + std::to_string(m) + " != " + std::to_string(other.n) + "x" + std::to_string(other.m));
-		}}
+	// --- 行列同士の演算 ---
+	void calc(function<T(const T v, size_t i, size_t j)> f) {{
 		for (size_t i = 0; i < n; ++i) {{
 			for (size_t j = 0; j < m; ++j) {{
-				d[i][j] += other.d[i][j];
+				d[i][j] = f(i, j);
 			}}
 		}}
+	}}
+	matrix& operator+=(const matrix& o) {{
+		if (n != o.n || m != o.m) {{
+			throw std::invalid_argument("行列の足し算は同じサイズでなければなりません。" + to_string(n) + "x" + to_string(m) + " != " + to_string(o.n) + "x" + to_string(o.m));
+		}}
+		calc([&o](T v, size_t i, size_t j) {{ return v + o[i][j]; }});
 		return *this;
 	}}
-	matrix& operator-=(const matrix& other) {{
-		if (n != other.n || m != other.m) {{
-			throw std::invalid_argument("行列の引き算は同じサイズでなければなりません。" + std::to_string(n) + "x" + std::to_string(m) + " != " + std::to_string(other.n) + "x" + std::to_string(other.m));
+	matrix& operator-=(const matrix& o) {{
+		if (n != o.n || m != o.m) {{
+			throw std::invalid_argument("行列の引き算は同じサイズでなければなりません。" + to_string(n) + "x" + to_string(m) + " != " + to_string(o.n) + "x" + to_string(o.m));
 		}}
-		for (size_t i = 0; i < n; ++i) {{
-			for (size_t j = 0; j < m; ++j) {{
-				d[i][j] -= other.d[i][j];
-			}}
-		}}
+		calc([&o](T v, size_t i, size_t j) {{ return v - o[i][j]; }});
 		return *this;
 	}}
-	matrix& operator*=(const matrix& other) {{
-		if (m != other.n) {{
-			throw std::invalid_argument("行列の掛け算は、左側の列数と右側の行数が一致しなければなりません。" + std::to_string(m) + " != " + std::to_string(other.n));
+	matrix& operator*=(const matrix& o) {{
+		if (m != o.n) {{
+			throw std::invalid_argument("行列の掛け算は、左側の列数と右側の行数が一致しなければなりません。" + to_string(m) + " != " + to_string(o.n));
 		}}
-		matrix<T> result(n, other.m);
+		matrix<T> result(n, o.m);
 		for (size_t i = 0; i < n; ++i) {{
-			for (size_t j = 0; j < other.m; ++j) {{
+			for (size_t j = 0; j < o.m; ++j) {{
 				for (size_t k = 0; k < m; ++k) {{
-					result[i][j] += d[i][k] * other.d[k][j];
+					result[i][j] += d[i][k] * o.d[k][j];
 				}}
 			}}
 		}}
 		d = result.d;
-		m = other.m;
+		m = o.m;
 		return *this;
 	}}
-	matrix operator+(const matrix& other) const {{ return matrix(*this) += other; }}
-	matrix operator-(const matrix& other) const {{ return matrix(*this) -= other; }}
-	matrix operator*(const matrix& other) const {{ return matrix(*this) *= other; }}
+	matrix operator+(const matrix& o) const {{ return matrix(*this) += o; }}
+	matrix operator-(const matrix& o) const {{ return matrix(*this) -= o; }}
+	matrix operator*(const matrix& o) const {{ return matrix(*this) *= o; }}
 
-	bool operator==(const matrix& other) const {{
-		if (n != other.n || m != other.m) return false;
+	bool operator==(const matrix& o) const {{
+		if (n != o.n || m != o.m) return false;
 		for (size_t i = 0; i < n; ++i) {{
 			for (size_t j = 0; j < m; ++j) {{
-				if (d[i][j] != other.d[i][j]) return false;
+				if (d[i][j] != o.d[i][j]) return false;
 			}}
 		}}
 		return true;
 	}}
-	bool operator!=(const matrix& other) const {{
-		return !(*this == other);
+	bool operator!=(const matrix& o) const {{
+		return !(*this == o);
 	}}
 
-	matrix& operator+=(const T& scalar) {{
-		for (size_t i = 0; i < n; ++i) {{
-			for (size_t j = 0; j < m; ++j) {{
-				d[i][j] += scalar;
-			}}
-		}}
+	// --- スカラー演算 ---
+	matrix& operator+=(const T& s) {{
+		calc([&s](T v, size_t i, size_t j) {{ return v + s; }});
 		return *this;
 	}}
-	matrix& operator-=(const T& scalar) {{
-		for (size_t i = 0; i < n; ++i) {{
-			for (size_t j = 0; j < m; ++j) {{
-				d[i][j] -= scalar;
-			}}
-		}}
+	matrix& operator-=(const T& s) {{
+		calc([&s](T v, size_t i, size_t j) {{ return v - s; }});
 		return *this;
 	}}
-	matrix& operator*=(const T& scalar) {{
-		for (size_t i = 0; i < n; ++i) {{
-			for (size_t j = 0; j < m; ++j) {{
-				d[i][j] *= scalar;
-			}}
-		}}
+	matrix& operator*=(const T& s) {{
+		calc([&s](T v, size_t i, size_t j) {{ return v * s; }});
 		return *this;
 	}}
-	matrix& operator/=(const T& scalar) {{
-		if (scalar == 0) {{
+	matrix& operator/=(const T& s) {{
+		if (s == 0) {{
 			throw std::invalid_argument("ゼロで割ることはできません。");
 		}}
-		for (size_t i = 0; i < n; ++i) {{
-			for (size_t j = 0; j < m; ++j) {{
-				d[i][j] /= scalar;
-			}}
-		}}
+		calc([&s](T v, size_t i, size_t j) {{ return v / s; }});
 		return *this;
 	}}
-	matrix operator+(const T& scalar) const {{ return matrix(*this) += scalar; }}
-	matrix operator-(const T& scalar) const {{ return matrix(*this) -= scalar; }}
-	matrix operator*(const T& scalar) const {{ return matrix(*this) *= scalar; }}
-	matrix operator/(const T& scalar) const {{ return matrix(*this) /= scalar; }}
+	matrix operator+(const T& s) const {{ return matrix(*this) += s; }}
+	matrix operator-(const T& s) const {{ return matrix(*this) -= s; }}
+	matrix operator*(const T& s) const {{ return matrix(*this) *= s; }}
+	matrix operator/(const T& s) const {{ return matrix(*this) /= s; }}
 
-	/** @brief 転置 */
+	// --- ベクトルとの演算 ---
+	template <typename Derived, typename U>
+	matrix& operator*=(const vector2_base<Derived, U>& v) {{
+		matrix<T> nv(m, 1, 1);
+		nv[0][0] = static_cast<T>(v.x);
+		nv[1][0] = static_cast<T>(v.y);
+		return (*this) *= nv;
+	}}
+	template <typename Derived, typename U>
+	matrix operator*(const vector2_base<Derived, U>& v) const {{ return matrix(*this) *= v; }}
+	template <typename Derived, typename U>
+	friend matrix operator*(const vector2_base<Derived, U>& v, const matrix& mat) {{
+		matrix<T> nv(1, mat.n, 1);
+		nv[0][0] = static_cast<T>(v.x);
+		nv[0][1] = static_cast<T>(v.y);
+		return nv * mat;
+	}}
+
+
+	/// @brief 転置
 	matrix transpose() const {{
 		matrix<T> result(m, n);
 		for (size_t i = 0; i < n; ++i) {{
@@ -143,6 +150,47 @@ public:
 		}}
 		return result;
 	}}
+	/// @brief 単位行列
+	static matrix identity(size_t size) {{
+		matrix<T> I(size, size, T());
+		for (size_t i = 0; i < size; ++i) {{
+			I[i][i] = static_cast<T>(1);
+		}}
+		return I;
+	}}
+	/// @brief 変換行列: 平行移動
+	static matrix translate(T tx, T ty) {{
+		matrix<T> res = identity(3);
+		res[0][2] = tx;
+		res[1][2] = ty;
+		return res;
+	}}
+	/// @brief 変換行列: 回転
+	static matrix rotate(double rad) {{
+		matrix<T> res = identity(3);
+		double c = cos(rad);
+		double s = sin(rad);
+		res[0][0] = static_cast<T>(c);
+		res[0][1] = static_cast<T>(-s);
+		res[1][0] = static_cast<T>(s);
+		res[1][1] = static_cast<T>(c);
+		return res;
+	}}
+	/// @brief 変換行列: 拡大縮小
+	static matrix scale(T sx, T sy) {{
+		matrix<T> res = identity(3);
+		res[0][0] = sx;
+		res[1][1] = sy;
+		return res;
+	}}
+	/// @brief 変換行列: スキュー
+	static matrix skew(double kx, double ky) {{
+		matrix<T> res = identity(3);
+		res[0][1] = static_cast<T>(tan(kx));
+		res[1][0] = static_cast<T>(tan(ky));
+		return res;
+	}}
+
 
 	friend ostream& operator<<(ostream& os, const matrix<T>& mat) {{
 		for (size_t i = 0; i < mat.n; ++i) {{
@@ -264,16 +312,16 @@ struct vector2_base {{
 	}}
 
 
-    Derived operator+(const Derived& other) const {{ return Derived(x + other.x, y + other.y); }}
-    Derived operator-(const Derived& other) const {{ return Derived(x - other.x, y - other.y); }}
-    Derived operator*(T scalar) const {{ return Derived(x * scalar, y * scalar); }}
-    Derived operator/(T scalar) const {{ return Derived(x / scalar, y / scalar); }}
-    Derived& operator+=(const Derived& other) {{ x += other.x; y += other.y; return static_cast<Derived&>(*this); }}
-    Derived& operator-=(const Derived& other) {{ x -= other.x; y -= other.y; return static_cast<Derived&>(*this); }}
-    Derived& operator*=(T scalar) {{ x *= scalar; y *= scalar; return static_cast<Derived&>(*this); }}
-    Derived& operator/=(T scalar) {{ x /= scalar; y /= scalar; return static_cast<Derived&>(*this); }}
-    bool operator==(const Derived& other) const {{ return x == other.x && y == other.y; }}
-    bool operator!=(const Derived& other) const {{ return !(*this == other); }}
+    Derived operator+(const Derived& o) const {{ return Derived(x + o.x, y + o.y); }}
+    Derived operator-(const Derived& o) const {{ return Derived(x - o.x, y - o.y); }}
+    Derived operator*(T s) const {{ return Derived(x * s, y * s); }}
+    Derived operator/(T s) const {{ return Derived(x / s, y / s); }}
+    Derived& operator+=(const Derived& o) {{ x += o.x; y += o.y; return static_cast<Derived&>(*this); }}
+    Derived& operator-=(const Derived& o) {{ x -= o.x; y -= o.y; return static_cast<Derived&>(*this); }}
+    Derived& operator*=(T s) {{ x *= s; y *= s; return static_cast<Derived&>(*this); }}
+    Derived& operator/=(T s) {{ x /= s; y /= s; return static_cast<Derived&>(*this); }}
+    bool operator==(const Derived& o) const {{ return x == o.x && y == o.y; }}
+    bool operator!=(const Derived& o) const {{ return !(*this == o); }}
 
 	friend istream& operator>>(istream& is, Derived& v) {{
 		is >> v.x >> v.y;
@@ -284,16 +332,19 @@ struct vector2_base {{
 		return os;
 	}}
 
-    operator matrix<T>() const {{
-        matrix<T> m(2, 1);
-        m[0][0] = x;
-        m[1][0] = y;
-        return m;
-    }}
+	template <typename U>
+	explicit vector2_base(const matrix<U>& m) {{
+		if ((m.rows() != 2 && m.rows() != 3) || m.cols() != 1) throw std::invalid_argument("vector2_base <- matrix: size mismatch");
+		x = static_cast<T>(m[0][0]);
+		y = static_cast<T>(m[1][0]);
+	}}
+	template <typename UDerived, typename U>
+	explicit vector2_base(vector2_base<UDerived, U> v) {{
+		x = static_cast<T>(v.x);
+		y = static_cast<T>(v.y);
+	}}
 }};
 
-struct int2;
-struct double2;
 struct int2 : public vector2_base<int2, int64_t> {{
     using vector2_base::vector2_base;
 
@@ -301,15 +352,6 @@ struct int2 : public vector2_base<int2, int64_t> {{
 		int nx = x - center.x, ny = y - center.y;
 		return int2(-ny + center.x, nx + center.y);
     }}
-
-    int2(const matrix<int64_t>& m) {{
-        if (m.rows() != 2 || m.cols() != 1) throw std::invalid_argument("int2 <- matrix<int64_t>: size mismatch");
-        x = m[0][0];
-        y = m[1][0];
-    }}
-
-	explicit int2(const double2& p);
-	explicit operator double2() const;
 }};
 
 struct double2 : public vector2_base<double2, double> {{
@@ -353,20 +395,7 @@ struct double2 : public vector2_base<double2, double> {{
 		}}
 		return double2((b2 * c1 - b1 * c2) / det, (a1 * c2 - a2 * c1) / det);
 	}}
-
-
-    double2(const matrix<double>& m) {{
-        if (m.rows() != 2 || m.cols() != 1) throw std::invalid_argument("double2 <- matrix<double>: size mismatch");
-        x = m[0][0];
-        y = m[1][0];
-    }}
-	explicit double2(const int2& p) {{ x = static_cast<double>(p.x); y = static_cast<double>(p.y); }}
-	explicit operator int2() const {{ return int2(static_cast<int64_t>(x), static_cast<int64_t>(y)); }}
 }};
-int2::int2(const double2& p) {{ x = static_cast<int64_t>(p.x); y = static_cast<int64_t>(p.y); }}
-int2::operator double2() const {{
-	return double2(static_cast<double>(x), static_cast<double>(y));
-}}
 ]],
 {}
 ))
